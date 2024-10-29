@@ -19,7 +19,7 @@ struct CalendarView: View {
             .datePickerStyle(GraphicalDatePickerStyle())
             .padding()
             
-            if let date = selectedDate, !eventsForSelectedDate.isEmpty {
+            if let date = selectedDate,  !eventsForSelectedDate.isEmpty {
                 Text("일정이 \(eventsForSelectedDate.count)개 있어요")
                     .font(.headline)
                     .padding(.top, 20)
