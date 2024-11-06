@@ -79,7 +79,7 @@ struct CalendarView: View {
             }
             .padding(.top, 20)
             .sheet(isPresented: $isPresentingAddEventView) {
-                AddEventView(events: $allEvents)
+                AddEventView(events: $allEvents,initialDate: selectedDate)
                     .onDisappear {
                         loadEvents(for: selectedDate)
                     }

@@ -3,6 +3,7 @@ import SwiftUI
 struct AddEventView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var events: [CustomEvent]
+    var initialDate: Date
     
     @State private var selectedColor: Color = .red
     @State private var title: String = ""
@@ -17,6 +18,12 @@ struct AddEventView: View {
     
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple]
     let reminders = ["종료 1일 전", "종료 12시간 전", "종료 6시간 전", "종료 2시간 전", "종료 1시간 전" , "종료 30분 전"]
+    
+    init(events: Binding<[CustomEvent]>, initialDate: Date) {
+            self._events = events
+            self.initialDate = initialDate
+            self._endTime = State(initialValue: initialDate) // 선택한 날짜로 초기화
+        }
     
     var body: some View {
         NavigationView {
@@ -143,6 +150,5 @@ struct CustomEvent: Identifiable {
 }
 
 #Preview {
-    AddEventView(events: .constant([]))
+    CalendarView()
 }
-
