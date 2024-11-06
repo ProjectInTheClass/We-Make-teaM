@@ -33,9 +33,24 @@ struct ContentView: View {
                     }
                 }
                 .padding(.top, 10)
-                
             }
             .navigationTitle("첫시작")
+            .navigationBarItems(trailing: HStack {
+                Button(action: {
+                    // 메인 페이지로 이동하는 동작
+                }) {
+                    Text("WMM")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                
+                NavigationLink(destination: SettingsView()) {
+                    Image(systemName: "gearshape.fill")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .foregroundColor(.black)
+                }
+            })
         }
     }
 }
@@ -43,4 +58,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
