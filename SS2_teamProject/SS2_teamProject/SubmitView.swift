@@ -1,12 +1,11 @@
-//해당 일정에 대한 제출현황
 import SwiftUI
 
 struct SubmitView: View {
-    var event: CustomEvent // 특정 이벤트를 전달받음
+    var event: Event // Specific event details
     @State private var members: [Member] = [
-        Member(name: "김현경", hasSubmitted: true),
+        Member(name: "김현경", hasSubmitted: false),
         Member(name: "신준용", hasSubmitted: false),
-        Member(name: "정광석", hasSubmitted: true)
+        Member(name: "정광석", hasSubmitted: false)
     ]
     
     var body: some View {
@@ -36,17 +35,18 @@ struct SubmitView: View {
 
             Spacer()
 
-            Button(action: {
-                // 과제 제출 페이지로 이동하는 동작 추가 (예: MySubmissionView())
-                print("과제 제출 페이지로 이동")
-            }) {
+            NavigationLink(destination: UploadMySubmissionView(onSubmit: {
+                if let myIndex = members.firstIndex(where: { $0.name == "김현경" }) {
+                    members[myIndex].hasSubmitted = true
+                }
+            })) {
                 Text("과제 제출하러 가기")
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(Color.blue)
                     .cornerRadius(8)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 50)
             }
         }
         .padding()
@@ -59,15 +59,15 @@ struct SubmitView: View {
         formatter.timeStyle = .none
         return formatter
     }
+
 }
 
 struct Member: Identifiable {
     let id = UUID()
     let name: String
-    let hasSubmitted: Bool
+    var hasSubmitted: Bool
 }
 
 #Preview {
-    SubmitView(event: CustomEvent(title: "디자인 중간 발표", date: Date(), location: "잇힛 507호", color: .red, participants: ["A", "B"]))
+    SubmitView(event: Event(title: "디자인 중간 발표", date: Date(), location: "잇힛 507호", color: .red, participants: ["A", "B"]))
 }
-

@@ -1,5 +1,4 @@
-//
-//  MemberSubmissionDetailView.swift
+//해당 제출물에 대한 각 팀원들의 제출물 확인과 댓글기능
 import SwiftUI
 
 struct MemberSubmissionDetailView: View {

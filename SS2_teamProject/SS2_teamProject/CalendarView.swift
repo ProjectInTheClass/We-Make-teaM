@@ -1,45 +1,21 @@
-//홈화면 캘린더
+//캘린더 화면
 import SwiftUI
 
-struct CalendarView: View {
+struct CalendarView: View{
     @State private var selectedDate: Date = Date()
-    @State private var eventsForSelectedDate: [CustomEvent] = []
+    @State private var eventsForSelectedDate: [Event] = []
     @State private var isPresentingAddEventView = false
     @EnvironmentObject var navigationManager: NavigationManager
-    @State private var allEvents: [CustomEvent] = []
-
-    var body: some View {
-        VStack {
-            // 상단 바
-            HStack {
-                Spacer()
-                Button(action: {
-                    navigationManager.resetToRoot()
-                }) {
-                    Text("WMM")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                }
-                
-                NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.black)
-                }
-                .padding(.trailing, 10)
-            }
-            .padding()
-            
-            // 캘린더 헤더 (월 이동 버튼)
+    @State private var allEvents: [Event] = []
+    
+    var body: some View{
+        VStack{
             CalendarHeader(selectedDate: $selectedDate)
-
-            // 캘린더 그리드
             CalendarGrid(selectedDate: $selectedDate, events: allEvents) { date in
                 loadEvents(for: date)
             }
             
-            // 일정 정보 표시
+            //해당 날짜의 추가된 일정들의 정보
             if !eventsForSelectedDate.isEmpty {
                 Text("일정이 \(eventsForSelectedDate.count)개 있어요")
                     .font(.headline)
@@ -64,7 +40,7 @@ struct CalendarView: View {
                 Text("일정이 없습니다")
                     .padding(.top, 20)
             }
-
+                
             // 일정 추가 버튼
             Button(action: {
                 isPresentingAddEventView = true
@@ -86,66 +62,70 @@ struct CalendarView: View {
             }
         }
         .onAppear {
-            loadDummyEvents() // 더미 데이터를 초기 로드
+            allEvents = loadDummyEvents()
+            loadEvents(for: selectedDate) // 더미 데이터를 초기 로드
         }
-        .navigationTitle("전체 일정")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    func loadEvents(for date: Date) {
-        eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
-    }
-    
-    func loadDummyEvents() {
-        allEvents.removeAll()
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        let eventsData = [
-            ("2024-11-05", "더미데이터 작성", "회의실 A", Color.blue, ["A", "B"]),
-            ("2024-11-12", "Data schema 짜기", "온라인", Color.green, ["B", "C"]),
-            ("2024-11-19", "git 올리기", "사무실 2층", Color.orange, ["A", "C"])
-        ]
-        
-        for (dateString, title, location, color, participants) in eventsData {
-            if let date = formatter.date(from: dateString) {
-                allEvents.append(CustomEvent(title: title, date: date, location: location, color: color, participants: participants))
+        .navigationBarItems(trailing: HStack {
+            Button(action: {
+                navigationManager.resetToRoot()
+            }) {
+                Text("WMM")
+                    .font(.headline)
+                    .foregroundColor(.blue)
             }
-        }
-
-        loadEvents(for: selectedDate)
+            
+            NavigationLink(destination: SettingView()) {
+                Image(systemName: "gearshape.fill")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(.black)
+            }
+        })
+        
     }
+    
+    func loadEvents(for date: Date){
+        eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date)}
+    }
+    
 }
 
-// 캘린더 헤더
-struct CalendarHeader: View {
+//캘린더 헤더
+struct CalendarHeader: View{
     @Binding var selectedDate: Date
     private let calendar = Calendar.current
-
-    var body: some View {
-        HStack {
-            Button(action: { selectedDate = calendar.date(byAdding: .month, value: -1, to: selectedDate)! }) {
+    
+    var body: some View{
+        HStack{
+            Button(action: {
+                selectedDate = calendar.date(byAdding: .month, value: -1, to: selectedDate)!
+            }){
                 Image(systemName: "chevron.left")
             }
+            .padding(.leading, 100)
+            
             Spacer()
             Text("\(calendar.component(.year, from: selectedDate))년 \(calendar.component(.month, from: selectedDate))월")
                 .font(.headline)
             Spacer()
-            Button(action: { selectedDate = calendar.date(byAdding: .month, value: 1, to: selectedDate)! }) {
+            Button(action: {
+                selectedDate = calendar.date(byAdding: .month, value: +1, to: selectedDate)!
+            }){
                 Image(systemName: "chevron.right")
             }
+            .padding(.trailing, 100)
         }
-        .padding()
     }
 }
 
-// 캘린더 그리드
+//캘린더 그리드
 struct CalendarGrid: View {
     @Binding var selectedDate: Date
-    var events: [CustomEvent]
+    var events: [Event]
     var onDateSelected: (Date) -> Void
-
+    
     var body: some View {
         let calendar = Calendar.current
         let days = generateDaysInMonth(for: selectedDate)
@@ -174,7 +154,7 @@ struct CalendarGrid: View {
                                     .padding(8)
                                     .background(calendar.isDate(selectedDate, inSameDayAs: day) ? Color.blue : Color.clear)
                                     .clipShape(Circle())
-
+                                
                                 // 일정 색상 표시
                                 HStack(spacing: 2) {
                                     ForEach(eventsForDate(day).prefix(3), id: \.self) { eventColor in
@@ -192,12 +172,12 @@ struct CalendarGrid: View {
         }
         .padding()
     }
-
-    // 주어진 날짜의 이벤트 색상 배열을 반환하는 함수
-    private func eventsForDate(_ date: Date) -> [Color] {
+    
+    //해당 날짜에 이벤트 색상 배열을 반환
+    private func eventsForDate(_ date: Date) -> [Color]{
         events.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.map { $0.color }
     }
-
+    
     // 선택된 월의 날짜 배열을 생성하는 함수
     private func generateDaysInMonth(for date: Date) -> [Date] {
         let calendar = Calendar.current
@@ -210,8 +190,7 @@ struct CalendarGrid: View {
     }
 }
 
-
-
 #Preview {
     CalendarView()
+        .environmentObject(NavigationManager())
 }

@@ -1,5 +1,4 @@
-//프로젝트 홈화면 -> 나의 제출
-
+//나의 전체 제출목록들 보기
 import SwiftUI
 
 struct TeamMember: Identifiable {
@@ -20,6 +19,7 @@ struct Submission: Identifiable {
 }
 
 // 예시 데이터
+
 private var submissions: [Submission] = [
     Submission(title: "제출물 1", deadline: Calendar.current.date(byAdding: .day, value: 2, to: Date())!, priority: 3, isSubmitted: true, fileName: "project1.pdf", fileSize: "2MB"),
     Submission(title: "제출물 2", deadline: Calendar.current.date(byAdding: .day, value: 5, to: Date())!, priority: 2, isSubmitted: true, fileName: "report.docx", fileSize: "500KB"),
@@ -32,6 +32,7 @@ private var submissions: [Submission] = [
 ]
 
 struct MySubmissionView: View {
+    @EnvironmentObject var navigationManager: NavigationManager
     @State private var navigateToRoot = false
     @Environment(\.presentationMode) var presentationMode
     var projectName: String
@@ -82,18 +83,22 @@ struct MySubmissionView: View {
         }
         .navigationTitle("나의 제출")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: ContentView(), isActive: $navigateToRoot) {
-                    Button(action: {
-                        navigateToRoot = true
-                    }) {
-                        Image(systemName: "house.fill") // 홈 아이콘
-                            .font(.title2)
-                    }
-                }
+        .navigationBarItems(trailing: HStack {
+            Button(action: {
+                navigationManager.resetToRoot()
+            }) {
+                Text("WMM")
+                    .font(.headline)
+                    .foregroundColor(.blue)
             }
-        }
+            
+            NavigationLink(destination: SettingView()) {
+                Image(systemName: "gearshape.fill")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(.black)
+            }
+        })
     }
     
     // 마감일까지 남은 일자에 따라 색상 결정

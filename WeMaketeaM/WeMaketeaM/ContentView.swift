@@ -1,3 +1,4 @@
+//1. 프로젝트 방 생성 & 선택 페이지
 import SwiftUI
 
 struct ContentView: View {

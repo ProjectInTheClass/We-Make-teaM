@@ -116,6 +116,7 @@ struct ParticipationRankingView: View {
         let score: Int
     }
 
-    #Preview {
-        ParticipationRankingView(teamName: "소프트웨어 스튜디오 2")
-    }
+#Preview {
+    ParticipationRankingView(teamName: "소프트웨어 스튜디오 2")
+}
+

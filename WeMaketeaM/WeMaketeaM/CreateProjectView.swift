@@ -1,4 +1,4 @@
-//방 생성화면
+//1-1. 프로젝트 방 생성화면
 import SwiftUI
 
 struct CreateProjectView: View {
