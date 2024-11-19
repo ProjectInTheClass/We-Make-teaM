@@ -23,11 +23,7 @@ struct SettingView: View {
                 }
 
                 // 앱 개인화 설정 섹션
-                Section(header: Text("앱 개인화 설정")) {
-                    NavigationLink(destination: ThemeSettingsView()) {
-                        Text("테마 변경")
-                    }
-                }
+               
 
                 // 개인정보 보호 섹션
                 Section(header: Text("개인정보 보호")) {
@@ -98,14 +94,7 @@ struct SettingView: View {
     }
 }
 
-// 공지사항 뷰
-struct NoticesView: View {
-    var body: some View {
-        Text("공지사항 페이지")
-            .font(.title)
-            .padding()
-    }
-}
+
 
 // 언어 설정 뷰
 struct LanguageSettingsView: View {
