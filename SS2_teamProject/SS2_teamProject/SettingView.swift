@@ -1,89 +1,76 @@
 import SwiftUI
 
 struct SettingView: View {
+    @State private var isPushNotificationEnabled: Bool = true // 푸시 알림 상태 관리
+
     var body: some View {
         NavigationView {
             List {
                 // 사용자 계정 관리 섹션
                 Section(header: Text("사용자 계정 관리")) {
-                    NavigationLink(destination: ProfileSettingsView()) {
-                        Text("프로필 관리")
-                    }
-                    NavigationLink(destination: ChangePasswordView()) {
-                        Text("비밀번호 변경")
-                    }
-                    Button(action: {
-                        print("로그아웃 클릭됨")
-                    }) {
-                        Text("로그아웃")
-                            .foregroundColor(.red)
+                    NavigationLink(destination: UserInfoSettingsView()) {
+                        Text("사용자 정보 관리")
                     }
                 }
-                
+
                 // 알림 설정 섹션
                 Section(header: Text("알림 설정")) {
-                    NavigationLink(destination: NotificationSettingsView()) {
-                        Text("푸시 알림 설정")
-                    }
-                   
+                    Toggle("푸시 알림", isOn: $isPushNotificationEnabled)
+                        .onChange(of: isPushNotificationEnabled) { newValue in
+                            print("푸시 알림 설정 변경됨: \(newValue)")
+                            updatePushNotificationStatus(newValue)
+                        }
                 }
-                
+
                 // 앱 개인화 설정 섹션
                 Section(header: Text("앱 개인화 설정")) {
                     NavigationLink(destination: ThemeSettingsView()) {
                         Text("테마 변경")
                     }
-                   
                 }
-                
+
                 // 개인정보 보호 섹션
                 Section(header: Text("개인정보 보호")) {
-                   /* NavigationLink(destination: PrivacyPolicyView()) {
+                    /* NavigationLink(destination: PrivacyPolicyView()) {
                         Text("개인정보 정책")
                     }*/
-                    NavigationLink(destination: DataManagementView()) {
-                        Text("데이터 관리")
-                    }
                 }
-                
-                // 사용자 동의 관리 섹션
-                Section(header: Text("사용자 동의 관리")) {
-                    NavigationLink(destination: PermissionsView()) {
-                        Text("푸시 알림 권한")
-                    }
-                   
-                }
-                
+
+            
+
                 // 지원 및 도움말 섹션
                 Section(header: Text("지원 및 도움말")) {
-                    /*NavigationLink(destination: FAQView()) {
-                        Text("도움말/FAQ")
-                    }*/
                     NavigationLink(destination: ContactSupportView()) {
                         Text("문의하기")
                     }
                 }
-                
-                // 일반 설정 섹션
-                Section(header: Text("일반 설정")) {
-                    NavigationLink(destination: CacheManagementView()) {
-                        Text("캐시 데이터 관리")
-                    }
-                    /*NavigationLink(destination: ResetSettingsView()) {
-                        Text("기본 설정 초기화")
-                    }*/
-                }
-                
+
                 // 기타 섹션
-                
                 Section(header: Text("기타")) {
-                    //NavigationLink(destination: AppInfoView()) {
-                      //  Text("앱 정보")
+                    NavigationLink(destination: NoticesView()) {
+                        Text("공지사항")
+                    }
+                    NavigationLink(destination: LanguageSettingsView()) {
+                        Text("언어 설정")
+                    }
+                    NavigationLink(destination: TermsOfServiceView()) {
+                        Text("이용약관")
+                    }
+                    Text("앱 버전: \(getAppVersion())") // 앱 버전 표시
+                        .foregroundColor(.gray)
+                    Button(action: {
+                        print("로그아웃 클릭됨")
+                        // 로그아웃 로직 추가
+                    }) {
+                        Text("로그아웃")
+                            .foregroundColor(.red)
                     }
                     Button(action: {
-                        print("앱 평가하기 클릭됨")
+                        print("탈퇴하기 클릭됨")
+                        // 탈퇴 로직 추가
                     }) {
-                        Text("앱 평가하기")
+                        Text("탈퇴하기")
+                            .foregroundColor(.red)
                     }
                 }
             }
@@ -92,6 +79,57 @@ struct SettingView: View {
         }
     }
 
+    // 푸시 알림 상태 변경 로직
+    func updatePushNotificationStatus(_ isEnabled: Bool) {
+        if isEnabled {
+            print("푸시 알림 활성화됨")
+            // UNUserNotificationCenter를 사용한 푸시 알림 권한 요청 로직 추가 가능
+        } else {
+            print("푸시 알림 비활성화됨")
+            // 비활성화 처리 로직 추가 가능
+        }
+    }
+
+    // 앱 버전 가져오기
+    func getAppVersion() -> String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) (\(build))"
+    }
+}
+
+// 공지사항 뷰
+struct NoticesView: View {
+    var body: some View {
+        Text("공지사항 페이지")
+            .font(.title)
+            .padding()
+    }
+}
+
+// 언어 설정 뷰
+struct LanguageSettingsView: View {
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = "한국어"
+    let languages = ["한국어", "English", "日本語", "中文"]
+
+    var body: some View {
+        VStack {
+            Picker("언어 선택", selection: $selectedLanguage) {
+                ForEach(languages, id: \.self) { language in
+                    Text(language)
+                }
+            }
+            .pickerStyle(.wheel)
+            .padding()
+
+            Text("현재 언어: \(selectedLanguage)")
+                .padding()
+
+            Spacer()
+        }
+        .navigationTitle("언어 설정")
+    }
+}
 
 #Preview {
     SettingView()
