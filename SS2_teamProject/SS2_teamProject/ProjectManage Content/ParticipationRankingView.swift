@@ -142,3 +142,4 @@ struct Participant {
     ParticipationRankingView(projectName: "소프트웨어 스튜디오 2")
 }
 
+

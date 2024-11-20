@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var isPresentingCreateProject = false //새로운 프로젝트 생성
     @State private var projects: [String] = ["소프트웨어 스튜디오2"] //생성된 프로젝트들
     
+    
     var body: some View {
         NavigationView{
             VStack(){
@@ -20,7 +21,11 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $isPresentingCreateProject){
                     CreateProjectView(projects: $projects)
+                        
                 }
+                .padding(.bottom, 3)
+                .padding(.top, 15)
+               
                 
                 ScrollView{
                     ForEach(projects, id:\.self){project in

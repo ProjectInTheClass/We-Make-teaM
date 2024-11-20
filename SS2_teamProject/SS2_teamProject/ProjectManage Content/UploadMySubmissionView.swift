@@ -48,4 +48,3 @@ struct UploadMySubmissionView: View {
 #Preview {
     UploadMySubmissionView(onSubmit: {})
 }
-

@@ -1,3 +1,4 @@
+//4-1캘린더에 이벤트 추가하는 페이지
 //캘린더에 이벤트 추가하는 페이지
 import SwiftUI
 
@@ -155,4 +156,3 @@ struct Event: Identifiable {
 #Preview {
     CalendarView()
 }
-

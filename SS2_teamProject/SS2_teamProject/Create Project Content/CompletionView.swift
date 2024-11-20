@@ -83,4 +83,3 @@ struct CompletionView: View {
         
     }
 }
-
