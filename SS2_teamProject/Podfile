@@ -1,0 +1,19 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'SS2_teamProject' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for SS2_teamProject
+
+  target 'SS2_teamProjectTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  target 'SS2_teamProjectUITests' do
+    # Pods for testing
+  end
+
+end

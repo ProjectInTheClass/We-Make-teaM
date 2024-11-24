@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C8B471792CF32A29006870C6 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C8B471782CF32A29006870C6 /* FirebaseAnalytics */; };
+		C8B4717E2CF3409D006870C6 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C8B4717D2CF3409D006870C6 /* FirebaseAnalytics */; };
+		C8FDEE312CF340ED00D63771 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C8FDEE302CF340ED00D63771 /* FirebaseAnalytics */; };
+		C8FDEE332CF341EA00D63771 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C8FDEE322CF341EA00D63771 /* FirebaseAuth */; };
+		C8FDEE352CF341EA00D63771 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = C8FDEE342CF341EA00D63771 /* FirebaseCore */; };
+		C8FDEE3D2CF34BD800D63771 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C8FDEE3C2CF34BD800D63771 /* FirebaseFirestore */; };
+		C8FDEE3F2CF34C0400D63771 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C8FDEE3E2CF34C0400D63771 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		AA6833362CE1C8C8009FFA27 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +62,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8B471792CF32A29006870C6 /* FirebaseAnalytics in Frameworks */,
+				C8FDEE3D2CF34BD800D63771 /* FirebaseFirestore in Frameworks */,
+				C8FDEE352CF341EA00D63771 /* FirebaseCore in Frameworks */,
+				C8FDEE332CF341EA00D63771 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +73,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8B4717E2CF3409D006870C6 /* FirebaseAnalytics in Frameworks */,
+				C8FDEE3F2CF34C0400D63771 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8FDEE312CF340ED00D63771 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +129,10 @@
 			);
 			name = SS2_teamProject;
 			packageProductDependencies = (
+				C8B471782CF32A29006870C6 /* FirebaseAnalytics */,
+				C8FDEE322CF341EA00D63771 /* FirebaseAuth */,
+				C8FDEE342CF341EA00D63771 /* FirebaseCore */,
+				C8FDEE3C2CF34BD800D63771 /* FirebaseFirestore */,
 			);
 			productName = SS2_teamProject;
 			productReference = AA6833252CE1C8C6009FFA27 /* SS2_teamProject.app */;
@@ -135,6 +156,8 @@
 			);
 			name = SS2_teamProjectTests;
 			packageProductDependencies = (
+				C8B4717D2CF3409D006870C6 /* FirebaseAnalytics */,
+				C8FDEE3E2CF34C0400D63771 /* FirebaseFirestore */,
 			);
 			productName = SS2_teamProjectTests;
 			productReference = AA6833352CE1C8C8009FFA27 /* SS2_teamProjectTests.xctest */;
@@ -158,6 +181,7 @@
 			);
 			name = SS2_teamProjectUITests;
 			packageProductDependencies = (
+				C8FDEE302CF340ED00D63771 /* FirebaseAnalytics */,
 			);
 			productName = SS2_teamProjectUITests;
 			productReference = AA68333F2CE1C8C8009FFA27 /* SS2_teamProjectUITests.xctest */;
@@ -195,6 +219,9 @@
 			);
 			mainGroup = AA68331C2CE1C8C6009FFA27;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA6833262CE1C8C6009FFA27 /* Products */;
 			projectDirPath = "";
@@ -409,7 +436,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProject";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -438,7 +465,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProject";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -456,7 +483,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProjectTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -475,7 +502,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProjectTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -489,10 +516,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T638N296XJ;
+				DEVELOPMENT_TEAM = ARGXR9JW63;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProjectUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -506,10 +533,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T638N296XJ;
+				DEVELOPMENT_TEAM = ARGXR9JW63;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "hkkim.SS2-teamProjectUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwarestudio2.wmm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -558,6 +585,55 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C8B471782CF32A29006870C6 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		C8B4717D2CF3409D006870C6 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		C8FDEE302CF340ED00D63771 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		C8FDEE322CF341EA00D63771 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		C8FDEE342CF341EA00D63771 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		C8FDEE3C2CF34BD800D63771 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		C8FDEE3E2CF34C0400D63771 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8B471772CF32A29006870C6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA68331D2CE1C8C6009FFA27 /* Project object */;
 }

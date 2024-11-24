@@ -1,7 +1,13 @@
 import SwiftUI
+import FirebaseAuth
 
 struct SettingView: View {
-    @State private var isPushNotificationEnabled: Bool = true // 푸시 알림 상태 관리
+    @State private var isPushNotificationEnabled: Bool = true
+    @State private var showAlert = false // 팝업 표시 여부
+    @State private var alertTitle = "" // 팝업 제목
+    @State private var alertMessage = "" // 팝업 메시지
+    @State private var isLogout = false // 로그인 화면으로 이동 여부
+    @State private var passwordInput = "" // 탈퇴 시 비밀번호 입력
 
     var body: some View {
         NavigationView {
@@ -18,21 +24,8 @@ struct SettingView: View {
                     Toggle("푸시 알림", isOn: $isPushNotificationEnabled)
                         .onChange(of: isPushNotificationEnabled) { newValue in
                             print("푸시 알림 설정 변경됨: \(newValue)")
-                            updatePushNotificationStatus(newValue)
                         }
                 }
-
-                // 앱 개인화 설정 섹션
-               
-
-                // 개인정보 보호 섹션
-                Section(header: Text("개인정보 보호")) {
-                    /* NavigationLink(destination: PrivacyPolicyView()) {
-                        Text("개인정보 정책")
-                    }*/
-                }
-
-            
 
                 // 지원 및 도움말 섹션
                 Section(header: Text("지원 및 도움말")) {
@@ -46,24 +39,24 @@ struct SettingView: View {
                     NavigationLink(destination: NoticesView()) {
                         Text("공지사항")
                     }
-                    NavigationLink(destination: LanguageSettingsView()) {
-                        Text("언어 설정")
-                    }
+                   
                     NavigationLink(destination: TermsOfServiceView()) {
                         Text("이용약관")
                     }
-                    Text("앱 버전: \(getAppVersion())") // 앱 버전 표시
+                    Text("앱 버전: \(getAppVersion())")
                         .foregroundColor(.gray)
+
+                    // 로그아웃 버튼
                     Button(action: {
-                        print("로그아웃 클릭됨")
-                        // 로그아웃 로직 추가
+                        logOut()
                     }) {
                         Text("로그아웃")
                             .foregroundColor(.red)
                     }
+
+                    // 탈퇴하기 버튼
                     Button(action: {
-                        print("탈퇴하기 클릭됨")
-                        // 탈퇴 로직 추가
+                        showPasswordAlert()
                     }) {
                         Text("탈퇴하기")
                             .foregroundColor(.red)
@@ -72,17 +65,28 @@ struct SettingView: View {
             }
             .navigationTitle("환경설정")
             .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-
-    // 푸시 알림 상태 변경 로직
-    func updatePushNotificationStatus(_ isEnabled: Bool) {
-        if isEnabled {
-            print("푸시 알림 활성화됨")
-            // UNUserNotificationCenter를 사용한 푸시 알림 권한 요청 로직 추가 가능
-        } else {
-            print("푸시 알림 비활성화됨")
-            // 비활성화 처리 로직 추가 가능
+            .alert(alertTitle, isPresented: $showAlert, actions: {
+                if alertTitle == "비밀번호 확인" {
+                    SecureField("비밀번호 입력", text: $passwordInput)
+                    Button("취소", role: .cancel) {}
+                    Button("확인") {
+                        deleteAccount() // 탈퇴 로직 호출
+                    }
+                } else {
+                    Button("확인") {
+                        if alertTitle == "탈퇴 완료" || alertTitle == "로그아웃 완료" {
+                            closePopupAndNavigate()
+                        }
+                    }
+                }
+            }, message: {
+                Text(alertMessage)
+            })
+            .fullScreenCover(isPresented: $isLogout) {
+                NavigationView {
+                    LoginView() // 로그인 화면으로 이동
+                }
+            }
         }
     }
 
@@ -92,31 +96,66 @@ struct SettingView: View {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
     }
-}
 
-
-
-// 언어 설정 뷰
-struct LanguageSettingsView: View {
-    @AppStorage("selectedLanguage") private var selectedLanguage: String = "한국어"
-    let languages = ["한국어", "English", "日本語", "中文"]
-
-    var body: some View {
-        VStack {
-            Picker("언어 선택", selection: $selectedLanguage) {
-                ForEach(languages, id: \.self) { language in
-                    Text(language)
-                }
-            }
-            .pickerStyle(.wheel)
-            .padding()
-
-            Text("현재 언어: \(selectedLanguage)")
-                .padding()
-
-            Spacer()
+    // 로그아웃 로직
+    func logOut() {
+        do {
+            try Auth.auth().signOut()
+            alertTitle = "로그아웃 완료"
+            alertMessage = "성공적으로 로그아웃되었습니다."
+            showAlert = true
+        } catch let error {
+            alertTitle = "로그아웃 실패"
+            alertMessage = "오류가 발생했습니다: \(error.localizedDescription)"
+            showAlert = true
         }
-        .navigationTitle("언어 설정")
+    }
+
+    // 탈퇴 로직
+    func deleteAccount() {
+        guard let user = Auth.auth().currentUser else {
+            alertTitle = "탈퇴 실패"
+            alertMessage = "현재 사용자 정보를 찾을 수 없습니다."
+            showAlert = true
+            return
+        }
+
+        let credential = EmailAuthProvider.credential(withEmail: user.email ?? "", password: passwordInput)
+
+        user.reauthenticate(with: credential) { _, error in
+            if let error = error {
+                alertTitle = "재인증 실패"
+                alertMessage = "오류가 발생했습니다: \(error.localizedDescription)"
+                showAlert = true
+                return
+            }
+
+            user.delete { error in
+                if let error = error {
+                    alertTitle = "탈퇴 실패"
+                    alertMessage = "오류가 발생했습니다: \(error.localizedDescription)"
+                } else {
+                    alertTitle = "탈퇴 완료"
+                    alertMessage = "성공적으로 계정이 삭제되었습니다."
+                }
+                showAlert = true
+            }
+        }
+    }
+
+    // 팝업 종료 후 로그인 화면 이동
+    func closePopupAndNavigate() {
+        showAlert = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            isLogout = true // 팝업 종료 후 로그인 화면으로 이동
+        }
+    }
+
+    // 비밀번호 확인 팝업 표시
+    func showPasswordAlert() {
+        alertTitle = "비밀번호 확인"
+        alertMessage = "계정을 삭제하려면 비밀번호를 입력해주세요."
+        showAlert = true
     }
 }
 
