@@ -1,5 +1,8 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseCore
+import GoogleSignIn
+import GoogleSignInSwift
 
 struct LoginView: View {
     @State private var email: String = ""
@@ -57,7 +60,7 @@ struct LoginView: View {
             }
 
             // 로그인 버튼
-            Button(action: login) {
+            Button(action: loginWithEmailPassword) {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
@@ -76,6 +79,11 @@ struct LoginView: View {
             }
             .padding(.horizontal)
             .disabled(isLoading)
+            
+            // 구글 로그인 버튼
+            GoogleSignInButton(action: loginWithGoogle)
+                .frame(height: 50)
+                .padding(.horizontal)
 
             // 회원가입으로 이동 버튼
             NavigationLink(destination: RegisterView()) {
@@ -93,7 +101,8 @@ struct LoginView: View {
         }
     }
 
-    func login() {
+    // 이메일/비밀번호 로그인 로직
+    func loginWithEmailPassword() {
         guard !email.isEmpty, !password.isEmpty else {
             errorMessage = "모든 필드를 입력하세요."
             return
@@ -107,6 +116,52 @@ struct LoginView: View {
             } else {
                 errorMessage = ""
                 isShowingMainView = true
+            }
+        }
+    }
+
+    // 구글 로그인 로직
+    func loginWithGoogle() {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            errorMessage = "Firebase 설정 오류: Client ID가 없습니다."
+            return
+        }
+
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+
+        // 현재 화면 가져오기
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            errorMessage = "현재 화면 정보를 가져올 수 없습니다."
+            return
+        }
+
+        isLoading = true
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+            isLoading = false
+            if let error = error {
+                errorMessage = "구글 로그인 실패: \(error.localizedDescription)"
+                return
+            }
+
+            guard let idToken = signInResult?.user.idToken?.tokenString else {
+                errorMessage = "Google ID Token이 없습니다."
+                return
+            }
+
+            let credential = GoogleAuthProvider.credential(
+                withIDToken: idToken,
+                accessToken: signInResult?.user.accessToken.tokenString ?? ""
+            )
+
+            Auth.auth().signIn(with: credential) { result, error in
+                if let error = error {
+                    errorMessage = "Firebase 로그인 실패: \(error.localizedDescription)"
+                } else {
+                    errorMessage = ""
+                    isShowingMainView = true // 로그인 성공 시 메인 화면 표시
+                }
             }
         }
     }

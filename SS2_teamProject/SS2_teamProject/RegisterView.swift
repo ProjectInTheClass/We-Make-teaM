@@ -1,10 +1,12 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 
 struct RegisterView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
+    @State private var nickname: String = ""
     @State private var errorMessage: String = ""
     @State private var isLoading = false
     @Environment(\.dismiss) var dismiss // 회원가입 후 로그인 화면으로 돌아가기
@@ -24,6 +26,11 @@ struct RegisterView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .autocapitalization(.none)
                 .keyboardType(.emailAddress)
+                .padding(.horizontal)
+
+            // 닉네임 입력
+            TextField("닉네임", text: $nickname)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
 
             // 비밀번호 입력
@@ -73,7 +80,7 @@ struct RegisterView: View {
 
     func register() {
         // 유효성 검사
-        guard !email.isEmpty, !password.isEmpty, !confirmPassword.isEmpty else {
+        guard !email.isEmpty, !password.isEmpty, !confirmPassword.isEmpty, !nickname.isEmpty else {
             errorMessage = "모든 필드를 입력하세요."
             return
         }
@@ -94,9 +101,23 @@ struct RegisterView: View {
             isLoading = false
             if let error = error {
                 errorMessage = "회원가입 실패: \(error.localizedDescription)"
+            } else if let user = result?.user {
+                saveUserToFirestore(user: user)
+            }
+        }
+    }
+
+    func saveUserToFirestore(user: User) {
+        let db = Firestore.firestore()
+        db.collection("users").document(user.uid).setData([
+            "email": email,
+            "nickname": nickname,
+            "createdAt": Timestamp()
+        ]) { error in
+            if let error = error {
+                errorMessage = "사용자 데이터 저장 실패: \(error.localizedDescription)"
             } else {
-                errorMessage = ""
-                dismiss() // 회원가입 성공 후 로그인 화면으로 돌아가기
+                dismiss() // 성공적으로 저장 후 화면 닫기
             }
         }
     }

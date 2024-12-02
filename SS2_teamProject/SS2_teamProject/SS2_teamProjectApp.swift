@@ -12,7 +12,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 @main
 struct SS2_teamProjectApp: App {
-    // Firebase 초기화를 위해 AppDelegate 연결
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     // 전역 상태 관리 객체
@@ -21,8 +20,8 @@ struct SS2_teamProjectApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                LoginView() // 초기 화면을 LoginView로 설정
-                    .environmentObject(navigationManager) // 네비게이션 관리 객체를 환경에 주입
+                RootView() // RootView로 초기 화면 설정
+                    .environmentObject(navigationManager)
             }
         }
     }

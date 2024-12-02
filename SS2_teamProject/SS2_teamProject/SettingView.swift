@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseAuth
+import GoogleSignIn
 
 struct SettingView: View {
     @State private var isPushNotificationEnabled: Bool = true
@@ -7,6 +8,7 @@ struct SettingView: View {
     @State private var alertTitle = "" // 팝업 제목
     @State private var alertMessage = "" // 팝업 메시지
     @State private var isLogout = false // 로그인 화면으로 이동 여부
+    @State private var isShowingPasswordSheet = false // 비밀번호 입력 Sheet 표시
     @State private var passwordInput = "" // 탈퇴 시 비밀번호 입력
 
     var body: some View {
@@ -56,7 +58,7 @@ struct SettingView: View {
 
                     // 탈퇴하기 버튼
                     Button(action: {
-                        showPasswordAlert()
+                        checkUserProviderAndDelete()
                     }) {
                         Text("탈퇴하기")
                             .foregroundColor(.red)
@@ -66,17 +68,9 @@ struct SettingView: View {
             .navigationTitle("환경설정")
             .navigationBarTitleDisplayMode(.inline)
             .alert(alertTitle, isPresented: $showAlert, actions: {
-                if alertTitle == "비밀번호 확인" {
-                    SecureField("비밀번호 입력", text: $passwordInput)
-                    Button("취소", role: .cancel) {}
-                    Button("확인") {
-                        deleteAccount() // 탈퇴 로직 호출
-                    }
-                } else {
-                    Button("확인") {
-                        if alertTitle == "탈퇴 완료" || alertTitle == "로그아웃 완료" {
-                            closePopupAndNavigate()
-                        }
+                Button("확인") {
+                    if alertTitle == "탈퇴 완료" || alertTitle == "로그아웃 완료" {
+                        closePopupAndNavigate()
                     }
                 }
             }, message: {
@@ -101,6 +95,7 @@ struct SettingView: View {
     func logOut() {
         do {
             try Auth.auth().signOut()
+            GIDSignIn.sharedInstance.signOut() // 구글 세션도 로그아웃
             alertTitle = "로그아웃 완료"
             alertMessage = "성공적으로 로그아웃되었습니다."
             showAlert = true
@@ -112,7 +107,7 @@ struct SettingView: View {
     }
 
     // 탈퇴 로직
-    func deleteAccount() {
+    func deleteAccountForGoogleUser() {
         guard let user = Auth.auth().currentUser else {
             alertTitle = "탈퇴 실패"
             alertMessage = "현재 사용자 정보를 찾을 수 없습니다."
@@ -120,7 +115,14 @@ struct SettingView: View {
             return
         }
 
-        let credential = EmailAuthProvider.credential(withEmail: user.email ?? "", password: passwordInput)
+        guard let idToken = GIDSignIn.sharedInstance.currentUser?.idToken?.tokenString else {
+            alertTitle = "재인증 실패"
+            alertMessage = "구글 인증 정보를 찾을 수 없습니다."
+            showAlert = true
+            return
+        }
+
+        let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: "")
 
         user.reauthenticate(with: credential) { _, error in
             if let error = error {
@@ -143,6 +145,27 @@ struct SettingView: View {
         }
     }
 
+    func checkUserProviderAndDelete() {
+        guard let user = Auth.auth().currentUser else {
+            alertTitle = "탈퇴 실패"
+            alertMessage = "사용자를 찾을 수 없습니다."
+            showAlert = true
+            return
+        }
+
+        if let providerData = user.providerData.first {
+            if providerData.providerID == GoogleAuthProviderID {
+                deleteAccountForGoogleUser()
+            } else if providerData.providerID == EmailAuthProviderID {
+                showPasswordAlert()
+            } else {
+                alertTitle = "탈퇴 실패"
+                alertMessage = "지원되지 않는 인증 방식입니다."
+                showAlert = true
+            }
+        }
+    }
+
     // 팝업 종료 후 로그인 화면 이동
     func closePopupAndNavigate() {
         showAlert = false
@@ -151,7 +174,7 @@ struct SettingView: View {
         }
     }
 
-    // 비밀번호 확인 팝업 표시
+    // 비밀번호 확인 팝업 표시 (이메일 사용자)
     func showPasswordAlert() {
         alertTitle = "비밀번호 확인"
         alertMessage = "계정을 삭제하려면 비밀번호를 입력해주세요."
