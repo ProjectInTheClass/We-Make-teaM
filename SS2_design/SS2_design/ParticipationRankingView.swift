@@ -6,78 +6,72 @@ struct ParticipationRankingView: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var currentDate = Date()
     @State private var participants = [
-        Participant(name: "김현경", score: 80, rank:1),
-        Participant(name: "신준용", score: 70, rank:2),
-        Participant(name: "정광석", score: 55, rank:3),
-        Participant(name: "이수민", score: 40, rank:4)
+        Participant(name: "김현경", score: 80),
+        Participant(name: "신준용", score: 70),
+        Participant(name: "정광석", score: 55),
+        Participant(name: "이수민", score: 40)
     ]
     
     var body: some View {
-        ScrollView{
+        ScrollView {
             VStack(spacing: 10) {
-                VStack(spacing: 0){
+                VStack(spacing: 0) {
                     ZStack {
-                        Text("Ranking View")
+                        Text("Team Ranking")
                             .font(.system(size: 50, weight: .bold, design: .rounded))
                             .frame(maxWidth: .infinity)
-                        
-                        //Image("char2")
-                        //    .resizable()
-                        //    .frame(width:90, height:90)
-                        //    .offset(x:137, y:-16)
-
                     }
                     .padding(.top, 10)
-                    HStack(){
+                    
+                    HStack {
                         Text("\(formattedDate)")
                             .foregroundColor(.red)
                             .font(.system(size: 18, weight: .bold, design: .rounded))
-                            
+                        
                         Text(" 까지의 참여도 순위")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .offset(x:-7)
-                        
+                            .offset(x: -7)
                     }
-                    .offset(y: -0)
-                    
-    
                 }
                 
-                
-                RankingPodiumView(participants: Array(sortedParticipants.prefix(3)))
-                
                 VStack(spacing: 20) {
-                    ForEach(sortedParticipants, id: \.name) { participant in
-                        HStack(){
-                            Text(" \(participant.rank) ")
+                    ForEach(Array(sortedParticipants.enumerated()), id: \.offset) { index, participant in
+                        HStack {
+                            Text(" \(index + 1) ")
                                 .fontWeight(.bold)
-                                .font(.title2)
+                                .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
                             Image("profile")
                                 .resizable()
-                                .frame(width: 70, height: 60)
+                                .frame(width: index == 0 ? 80 : 70, height: index == 0 ? 70 : 60) // 1등은 더 큰 이미지
                                 .foregroundColor(.black)
                                 .background(Color.white)
+                            
                             Spacer()
                             Text("\(participant.name): ")
                                 .fontWeight(.bold)
-                                .font(.title2)
+                                .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
                             Spacer()
                             Text("\(participant.score)점")
                                 .fontWeight(.semibold)
                                 .foregroundColor(.black)
-                            Spacer()
-                            Spacer()
-                            Spacer()
+                                .font(index == 0 ? .title2 : .headline) // 1등은 더 큰 점수 글씨
                             Spacer()
                         }
-                        .padding(10)
-                        .frame(width:320, height: 70)
-                        .border(Color.black, width:1)
+                        .padding(index == 0 ? 15 : 10) // 1등은 더 넓은 여백
+                        .frame(width: index == 0 ? 340 : 320, height: index == 0 ? 80 : 70) // 1등은 더 큰 프레임
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.15), radius: 6, x: 4, y: 4)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(index == 0 ? Color.yellow.opacity(0.5) : Color.gray.opacity(0.5), lineWidth: index == 0 ? 3 : 1) // 1등은 노란색 테두리
+                        )
                     }
                 }
                 .padding(.top, 20)
-                
-                Spacer()
+
             }
             .padding()
             .navigationTitle("참여도 순위")
@@ -114,66 +108,9 @@ struct ParticipationRankingView: View {
     }
 }
 
-struct RankingPodiumView: View {
-    var participants: [Participant]
-    
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 30) {
-            // 2등
-            if participants.indices.contains(1) {
-                VStack {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                    Text(participants[1].name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    Text("2")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, 30)
-            }
-            
-            // 1등
-            if participants.indices.contains(0) {
-                VStack {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 60, height: 60)
-                    Text(participants[0].name)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                    Text("1")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, 10)
-            }
-            
-            // 3등
-            if participants.indices.contains(2) {
-                VStack {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                    Text(participants[2].name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    Text("3")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, 30)
-            }
-        }
-    }
-}
-
 struct Participant {
     let name: String
     let score: Int
-    let rank: Int
 }
 
 #Preview {
