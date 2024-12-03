@@ -4,6 +4,8 @@ import SwiftUI
 struct CompletionView: View {
     @Environment(\.dismiss) var dismiss
     var teamName: String
+    var teamPWD: String
+    var teamID: String
     @Binding var projects: [String]
     @State private var inviteLink: String =  "https://j/94997178477?pwd=aHdldlxlIskd"
     var onConfirm: () -> Void
@@ -15,19 +17,23 @@ struct CompletionView: View {
                 .fontWeight(.bold)
                 .foregroundColor(.blue)
             
+            
             Text("팀 생성이 완료되었습니다.")
                 .font(.headline)
             
-            Text("아래링크를 통해\n팀원들을 초대하세요!")
+            Text("프로젝트방 ID와 비밀번호 통해\n팀원들을 초대하세요!")
                 .multilineTextAlignment(.center)
                 .font(.headline)
+                .padding(.bottom, 10)
             
-            Text("초대링크")
+            Text("방 비밀번호: " + teamPWD)
+            
+            Text("프로젝트방 ID")
                 .font(.headline)
                 .foregroundColor(.red)
                 .padding(.top, 10)
             
-            Text(inviteLink)
+            Text(teamID)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(8)
@@ -79,7 +85,7 @@ struct CompletionView: View {
 }
 
 #Preview{
-    CompletionView(teamName: "소프트웨어 스튜디오 2", projects: .constant(["소프트웨어 스튜디오2"])){
+    CompletionView(teamName: "소프트웨어 스튜디오 2",teamPWD: "0000", teamID: "aHdldlxlIskd",projects: .constant(["소프트웨어 스튜디오2"])){
         
     }
 }

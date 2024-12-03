@@ -8,7 +8,9 @@ struct CreateProjectView: View{
     @State private var selectedMemberCount: Int = 1  //팀 맴버수
     @State private var selectedYear: Int = 2024   //프로젝트 진행년도
     @State private var selectedSemester: Int = 1    //프로젝트 진행학기
+    @State private var teamPWD: String = ""   //프로젝트방 비밀번호
     @State private var isPresentingCompletionView = false   //프로제트 생성완료
+    @State private var teamID: String = "aHdldlxlIskd" //프로젝트 방검색 ID
     
     let memberCounts = Array(1...6) //팀 멤버수 1~5명까지로 제한
     let years = Array(2020...2025)
@@ -56,6 +58,13 @@ struct CreateProjectView: View{
                     .frame(maxWidth: 60)
                     
                 }
+                
+                HStack(){
+                    Text("방 비밀번호:")
+                    TextField("",text: $teamPWD)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                
                 Spacer()
                 
                 Button(action:{
@@ -81,7 +90,7 @@ struct CreateProjectView: View{
                 }
             }
             .sheet(isPresented: $isPresentingCompletionView){
-                CompletionView(teamName: teamName, projects: $projects){
+                CompletionView(teamName: teamName, teamPWD: teamPWD, teamID: teamID, projects: $projects){
                     dismiss()
                 }
             }
