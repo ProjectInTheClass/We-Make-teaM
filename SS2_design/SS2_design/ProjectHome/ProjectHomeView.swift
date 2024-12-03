@@ -7,7 +7,7 @@ struct ProjectHomeView: View {
     var body: some View {
         ZStack(){
             Color.yellow
-                .opacity(0.18)
+                .opacity(0.15)
                 .ignoresSafeArea()
             VStack {
                 Spacer()

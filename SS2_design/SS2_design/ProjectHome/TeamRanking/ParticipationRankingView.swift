@@ -14,11 +14,11 @@ struct ParticipationRankingView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: 20) {
                 VStack(spacing: 0) {
                     ZStack {
                         Text("Team Ranking")
-                            .font(.system(size: 50, weight: .bold, design: .rounded))
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
                             .frame(maxWidth: .infinity)
                     }
                     .padding(.top, 10)
@@ -45,16 +45,17 @@ struct ParticipationRankingView: View {
                                 .frame(width: index == 0 ? 80 : 70, height: index == 0 ? 70 : 60) // 1등은 더 큰 이미지
                                 .foregroundColor(.black)
                                 .background(Color.white)
-                            
                             Spacer()
                             Text("\(participant.name): ")
                                 .fontWeight(.bold)
                                 .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
                             Spacer()
+                            Spacer()
                             Text("\(participant.score)점")
                                 .fontWeight(.semibold)
                                 .foregroundColor(.black)
                                 .font(index == 0 ? .title2 : .headline) // 1등은 더 큰 점수 글씨
+                            Spacer()
                             Spacer()
                         }
                         .padding(index == 0 ? 15 : 10) // 1등은 더 넓은 여백
