@@ -232,10 +232,10 @@ struct AddProjectModalView: View {
                 }
             }) {
                 Text("추가")
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.blue)
+                    .background(Color.yellow.opacity(0.4))
                     .cornerRadius(10)
                     .padding(.horizontal)
             }
@@ -244,10 +244,10 @@ struct AddProjectModalView: View {
                 showModal = false // 모달 창 닫기
             }) {
                 Text("취소")
-                    .foregroundColor(.red)
+                    .foregroundColor(.black)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.black.opacity(0.3))
                     .cornerRadius(10)
                     .padding(.horizontal)
             }
