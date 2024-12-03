@@ -46,13 +46,14 @@ struct CreateProjectView: View{
                             .font(.system(size: 40, weight: .regular, design: .rounded))
                             //.foregroundColor(.white)
                             .bold()
+                            .offset(y:-10)
 
         
     
                         Image("plane3")
                             .resizable()
                             .frame(width: 180, height: 180)
-                            .offset(y: 60)
+                            .offset(x: 100, y: 60)
     
             
                     }

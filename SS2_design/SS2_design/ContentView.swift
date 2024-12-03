@@ -5,6 +5,10 @@ struct ContentView: View {
     @StateObject private var navigationManager = NavigationManager()
     @State private var isPresentingCreateProject = false //새로운 프로젝트 생성
     @State private var projects: [String] = ["소프트웨어 스튜디오2"] //생성된 프로젝트들
+    //프로젝트 아이디와 비밀번호로 추가
+    @State private var enteredProjectID = "" //추가할 프로젝트아이디
+    @State private var enteredPassword = ""//추가할 비밀번호
+    @State private var showAddProjectModal  = false //모달창
     
     
     var body: some View {
@@ -85,7 +89,9 @@ struct ContentView: View {
                     .offset(y: -30)
                    
         
-                    Button(action:{}){
+                    Button(action:{
+                        showAddProjectModal = true // 모달창 표시
+                    }){
                         Text("+")
                             .font(.system(size: 40, weight: .bold))
                             .foregroundColor(.white)
@@ -95,6 +101,15 @@ struct ContentView: View {
                             .offset(y:-5)
                     }
                     .padding(.leading, 280)
+                    .sheet(isPresented: $showAddProjectModal) {
+                        AddProjectModalView(
+                            enteredProjectID: $enteredProjectID,
+                            enteredPassword: $enteredPassword,
+                            projects: $projects,
+                            showModal: $showAddProjectModal
+                        )
+                        .frame(height: 100)
+                    }
                     
                     ScrollView{
                         ForEach(projects, id:\.self){project in
@@ -172,6 +187,77 @@ struct ContentView: View {
             }
         }
         .environmentObject(navigationManager)
+    }
+}
+
+struct AddProjectModalView: View {
+    @Binding var enteredProjectID: String
+    @Binding var enteredPassword: String
+    @Binding var projects: [String]
+    @Binding var showModal: Bool
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("프로젝트 추가")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding()
+            HStack(){
+                Text("프로젝트 ID")
+                    .padding(.leading,10)
+                TextField("프로젝트 ID 입력", text: $enteredProjectID)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+            }
+            
+            HStack(){
+
+                Text("비밀번호")
+                    .padding(.leading,10)
+                SecureField("비밀번호 입력", text: $enteredPassword)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+            }
+            
+            
+            
+            Button(action: {
+                // 입력된 ID와 비밀번호가 조건을 만족하면 프로젝트 추가
+                if validateProject(id: enteredProjectID, password: enteredPassword) {
+                    projects.append(enteredProjectID) // 프로젝트 추가
+                    showModal = false // 모달 창 닫기
+                } else {
+                    // 입력값이 유효하지 않을 경우 처리
+                    print("Invalid project ID or password")
+                }
+            }) {
+                Text("추가")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+            }
+            
+            Button(action: {
+                showModal = false // 모달 창 닫기
+            }) {
+                Text("취소")
+                    .foregroundColor(.red)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+            }
+        }
+    }
+    
+    // 프로젝트 ID와 비밀번호 유효성 검사
+    func validateProject(id: String, password: String) -> Bool {
+        // 유효성 검사 로직 추가
+        return id == "abcdefg" && password == "0000" // 예제 로직
     }
 }
 

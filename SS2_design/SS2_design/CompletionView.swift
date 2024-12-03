@@ -7,7 +7,6 @@ struct CompletionView: View {
     var teamPWD: String
     var teamID: String
     @Binding var projects: [String]
-    @State private var inviteLink: String = "https://j/94997178477?pwd=aHdldlxlIskd"
     var onConfirm: () -> Void
 
     var body: some View {
@@ -42,8 +41,8 @@ struct CompletionView: View {
                     // 내용 섹션
                     VStack(spacing: 40) {
                         VStack(spacing: 40) {
-                            InfoSection(title: "프로젝트방 ID", value: teamID, copyValue: inviteLink)
-                            InfoSection(title: "방 비밀번호", value: teamPWD, copyValue: inviteLink)
+                            InfoSection(title: "프로젝트방 ID", ID: teamID, PWD: teamPWD)
+                            InfoSection(title: "방 비밀번호", ID: teamPWD, PWD: teamPWD)
                         }
                         .frame(maxWidth: .infinity)
                         
@@ -79,8 +78,8 @@ struct CompletionView: View {
 // InfoSection 재사용 가능한 뷰
 struct InfoSection: View {
     var title: String
-    var value: String
-    var copyValue: String
+    var ID: String
+    var PWD: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -89,7 +88,7 @@ struct InfoSection: View {
                 .foregroundColor(.black)
             
             HStack(spacing: 15) {
-                Text(value)
+                Text(ID)
                     .padding()
                     .frame(height: 40)
                     .frame(minWidth: 250)
@@ -97,14 +96,14 @@ struct InfoSection: View {
                     .cornerRadius(3)
                     .contextMenu {
                         Button(action: {
-                            UIPasteboard.general.string = copyValue
+                            UIPasteboard.general.string = PWD
                         }) {
                             Label("복사", systemImage: "doc.on.doc")
                         }
                     }
                 
                 Button(action: {
-                    UIPasteboard.general.string = copyValue
+                    UIPasteboard.general.string = PWD
                 }) {
                     Text("복사")
                         .fontWeight(.regular)
@@ -125,7 +124,7 @@ struct InfoSection: View {
     CompletionView(
         teamName: "소프트웨어 스튜디오 2",
         teamPWD: "0000",
-        teamID: "aHdldlxlIskd",
+        teamID: "abcdefg",
         projects: .constant(["소프트웨어 스튜디오2"])
     ) {}
 }
