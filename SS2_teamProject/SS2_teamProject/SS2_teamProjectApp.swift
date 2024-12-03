@@ -17,6 +17,7 @@ struct SS2_teamProjectApp: App {
     // 전역 상태 관리 객체
     @StateObject private var navigationManager = NavigationManager()
 
+
     var body: some Scene {
         WindowGroup {
             NavigationView {

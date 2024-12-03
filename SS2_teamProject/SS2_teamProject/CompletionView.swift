@@ -52,7 +52,7 @@ struct CompletionView: View {
             }
             
             Button(action: {
-                projects.append(teamName)
+                //projects.append(teamName)
                 onConfirm()
             }){
                 Text("확인")

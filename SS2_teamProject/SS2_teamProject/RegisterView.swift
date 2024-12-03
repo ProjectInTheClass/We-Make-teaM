@@ -112,7 +112,8 @@ struct RegisterView: View {
         db.collection("users").document(user.uid).setData([
             "email": email,
             "nickname": nickname,
-            "createdAt": Timestamp()
+            "createdAt": Timestamp(),
+            "score": 50 // 기본값 50
         ]) { error in
             if let error = error {
                 errorMessage = "사용자 데이터 저장 실패: \(error.localizedDescription)"
