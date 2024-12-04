@@ -42,8 +42,9 @@ struct UploadMySubmissionView: View {
                 }
                 .padding()
                 .frame(height:45)
-                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.yellow.opacity(0.6))
-                .cornerRadius(8)
+                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.white.opacity(0.6))
+                .border(!isSubmitted ? Color.yellow : Color.white)
+                .cornerRadius(3)
                 .disabled(isSubmitted) // 제출 완료 시 비활성화
                 .actionSheet(isPresented: $showDummyFilePicker) {
                     ActionSheet(
@@ -58,11 +59,13 @@ struct UploadMySubmissionView: View {
                         } + [.cancel()]
                     )
                 }
+                
                 // 업로드된 파일 및 텍스트 목록
                 if !uploadedFiles.isEmpty  {
                     VStack(alignment: .leading, spacing: 10) {
                         if !uploadedFiles.isEmpty {
                             Text("업로드된 파일:")
+                                .padding(.top, 10)
                                 .font(.headline)
                                 .foregroundColor(.gray)
                             ForEach(uploadedFiles, id: \.self) { fileName in
@@ -76,8 +79,11 @@ struct UploadMySubmissionView: View {
                 }
     
             }
+
             
             VStack(alignment: .leading){
+                Divider()
+                    .padding(.bottom,10)
                 // 텍스트 추가 버튼
                 Button(action: {
                     if !isSubmitted {
@@ -89,8 +95,9 @@ struct UploadMySubmissionView: View {
                 }
                 .padding()
                 .frame(height:45)
-                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.yellow.opacity(0.6))
-                .cornerRadius(8)
+                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.white.opacity(0.6))
+                .border(!isSubmitted ? Color.yellow : Color.white)
+                .cornerRadius(3)
                 .disabled(isSubmitted) // 제출 완료 시 비활성화
                 .sheet(isPresented: $showTextInput) {
                     VStack(spacing: 20) {
@@ -112,7 +119,7 @@ struct UploadMySubmissionView: View {
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.green)
+                                    .background(Color.yellow)
                                     .cornerRadius(8)
                             }
                             
@@ -124,7 +131,7 @@ struct UploadMySubmissionView: View {
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.red)
+                                    .background(Color.black)
                                     .cornerRadius(8)
                             }
                         }
@@ -139,6 +146,7 @@ struct UploadMySubmissionView: View {
                         
                         if !uploadedTexts.isEmpty {
                             Text("업로드된 텍스트:")
+                                .padding(.top, 10)
                                 .font(.headline)
                                 .foregroundColor(.gray)
                             ForEach(uploadedTexts, id: \.self) { text in
@@ -155,6 +163,7 @@ struct UploadMySubmissionView: View {
             }
             
             
+            Divider()
             // 제출 버튼
             Button(action: {
                 if !uploadedFiles.isEmpty || !uploadedTexts.isEmpty {
@@ -177,7 +186,7 @@ struct UploadMySubmissionView: View {
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background((uploadedFiles.isEmpty && uploadedTexts.isEmpty) ? Color.gray : Color.yellow.opacity(0.8))
+                    .background((uploadedFiles.isEmpty && uploadedTexts.isEmpty) ? Color.gray : Color.yellow.opacity(0.7))
                     .cornerRadius(8)
                     .padding(.horizontal, 10)
             }
