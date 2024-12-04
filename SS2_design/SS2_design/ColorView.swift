@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Color {
-    static let customYellow = Color(red: 1.0, green: 0.9, blue: 0.0)
+    static let customYellow = Color(hex:"#FFFF00")// Color(red: 1.0, green: 0.9, blue: 0.0)
     static let customBlue = Color(hex: "#1E90FF") // HEX 값 사용
 }
 
