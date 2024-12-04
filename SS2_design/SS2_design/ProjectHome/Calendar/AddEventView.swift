@@ -1,11 +1,13 @@
-//캘린더에 이벤트 추가하는 페이지
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
+
 
 struct AddEventView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var events: [Event]
     var initialDate: Date
-    
+    var projectName : String
     @State private var selectedColor: Color = .red
     @State private var title: String = ""
     @State private var endTime: Date = Date()
@@ -19,12 +21,8 @@ struct AddEventView: View {
     
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple]
     let reminders = ["종료 1일 전", "종료 12시간 전", "종료 6시간 전", "종료 2시간 전", "종료 1시간 전" , "종료 30분 전"]
-    
-    init(events: Binding<[Event]>, initialDate: Date) {
-            self._events = events
-            self.initialDate = initialDate
-            self._endTime = State(initialValue: initialDate) // 선택한 날짜로 초기화
-        }
+
+  
     
     var body: some View {
         NavigationView {
@@ -147,7 +145,7 @@ struct AddEventView: View {
                 Spacer()
                 
                 Button(action: {
-                    let newEvent = Event(title: title, date: endTime, location: location, color: selectedColor, participants: selectedMembers)
+                    let newEvent = Event(projectName: projectName, title: title, date: endTime, location: location, color: selectedColor, participants: selectedMembers)
                     events.append(newEvent)
                     dismiss()
                 }) {
@@ -181,10 +179,51 @@ struct AddEventView: View {
         }
         
     }
+    
+    
+    // Firestore에 이벤트 저장 메서드
+    func saveEventToFirestore() {
+        // 새로운 이벤트 데이터 구성
+        let newEvent = Event(
+            projectName : projectName,
+            title: title,
+            date: endTime,
+            location: location,
+            color: selectedColor,
+            participants: selectedMembers
+        )
+        
+        // Firestore에 저장할 데이터
+        let db = Firestore.firestore()
+        let eventData: [String: Any] = [
+            "projectName" : projectName,
+            "title": title,
+            "date": endTime,
+            "color": selectedColor.description, // 색상을 문자열로 변환
+            "location": location,
+            "participants": selectedMembers,
+            "createdAt": FieldValue.serverTimestamp() // Firestore 서버 시간
+        ]
+        
+        // Firestore에 데이터 추가
+        db.collection("events").addDocument(data: eventData) { error in
+            if let error = error {
+                print("Firestore 저장 실패: \(error.localizedDescription)")
+            } else {
+                print("Firestore 저장 성공!")
+                events.append(newEvent) // 로컬 데이터 업데이트
+                dismiss() // 화면 닫기
+            }
+        }
+    }
 }
+
+
+
 
 struct Event: Identifiable {
     let id = UUID()
+    let projectName : String
     let title: String
     let date: Date
     let location: String
@@ -193,5 +232,5 @@ struct Event: Identifiable {
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(projectName : "asdf")
 }

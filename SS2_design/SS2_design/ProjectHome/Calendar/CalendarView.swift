@@ -1,5 +1,8 @@
 //캘린더 화면
 import SwiftUI
+import FirebaseFirestore
+import UIKit
+
 
 struct CalendarView: View {
     @State private var selectedDate: Date = Date()
@@ -7,6 +10,7 @@ struct CalendarView: View {
     @State private var isPresentingAddEventView = false
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var allEvents: [Event] = []
+    var projectName : String
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -81,16 +85,19 @@ struct CalendarView: View {
             }
             .padding(.top, 20)
             .sheet(isPresented: $isPresentingAddEventView) {
-                AddEventView(events: $allEvents, initialDate: selectedDate)
+                AddEventView(events: $allEvents, initialDate: selectedDate, projectName:projectName)
                     .onDisappear {
                         loadEvents(for: selectedDate)
                     }
             }
         }
         .onAppear {
-            allEvents = loadDummyEvents()
-            loadEvents(for: selectedDate) // 더미 데이터를 초기 로드
-        }
+           // Firestore에서 이벤트 가져오기
+           fetchEventsFromFirestore(for: projectName) { events in
+               allEvents = events
+               loadEvents(for: selectedDate)
+           }
+       }
         .navigationTitle("캘린더")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing: HStack {
@@ -117,15 +124,15 @@ struct CalendarView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         
-        let event1 = ("2024-11-05", "더미데이터 작성", "회의실 A", Color.blue, ["김현경", "신준용"])
-        let event2 = ("2024-11-12", "Data schema 짜기", "온라인", Color.green, ["신준용", "정광석"])
-        let event3 = ("2024-11-19", "git 올리기", "사무실 2층", Color.orange, ["김현경", "신준용","정광석"])
+        let event1 = ("asdf","2024-11-05", "더미데이터 작성", "회의실 A", Color.blue, ["김현경", "신준용"])
+        let event2 = ("asdf","2024-11-12", "Data schema 짜기", "온라인", Color.green, ["신준용", "정광석"])
+        let event3 = ("asdf","2024-11-19", "git 올리기", "사무실 2층", Color.orange, ["김현경", "신준용","정광석"])
             
         let eventsData = [event1, event2, event3]
         
-        for (dateString, title, location, color, participants) in eventsData {
+        for (projectName, dateString, title, location, color, participants) in eventsData {
             if let date = formatter.date(from: dateString) {
-                events.append(Event(title: title, date: date, location: location, color: color, participants: participants))
+                events.append(Event(projectName : projectName, title: title, date: date, location: location, color: color, participants: participants))
             }
         }
         
@@ -133,7 +140,7 @@ struct CalendarView: View {
     }
     
     func loadEvents(for date: Date) {
-        eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date)}
+        eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.projectName == projectName }
     }
     
 }
@@ -306,12 +313,82 @@ struct CalendarGrid: View {
 }
 
 
+func colorFromEnglishString(_ colorName: String) -> Color {
+    switch colorName.lowercased() {
+    case "red": return Color.red
+    case "orange": return Color.orange
+    case "yellow": return Color.yellow
+    case "green": return Color.green
+    case "blue": return Color.blue
+    case "purple": return Color.purple
+    default: return Color.black // 기본값
+    }
+}
+
+
+func fetchEventsFromFirestore(for projectName: String, completion: @escaping ([Event]) -> Void) {
+    let db = Firestore.firestore()
+    
+    // Firestore에서 events 컬렉션 가져오기
+    db.collection("events")
+        .whereField("projectName", isEqualTo: projectName)
+        .getDocuments { snapshot, error in
+            if let error = error {
+                print("Firestore 데이터 가져오기 실패: \(error.localizedDescription)")
+                completion([]) // 오류 발생 시 빈 배열 반환
+                return
+            }
+            
+            guard let documents = snapshot?.documents else {
+                print("No events found for project: \(projectName)")
+                completion([]) // 결과가 없을 경우 빈 배열 반환
+                return
+            }
+            
+            // Firestore 문서를 Event 객체로 매핑
+            let events: [Event] = documents.compactMap { document in
+                let data = document.data()
+                guard
+                    let title = data["title"] as? String,
+                    let timestamp = data["date"] as? Timestamp,
+                    let colorName = data["color"] as? String,
+                    let location = data["location"] as? String,
+                    let participants = data["participants"] as? [String]
+                else {
+                    return nil
+                }
+                
+                // Firestore에 저장된 색상을 Color로 변환
+                let color = colorFromEnglishString(colorName)
+                
+                return Event(
+                    projectName: projectName,
+                    title: title,
+                    date: timestamp.dateValue(),
+                    location: location,
+                    color: color,
+                    participants: participants
+                )
+            }
+            
+            // 결과를 출력
+            print("총 \(events.count)개의 이벤트를 가져왔습니다:")
+            for event in events {
+                print(" - Title: \(event.title), Date: \(event.date), Location: \(event.location), Participants: \(event.participants.joined(separator: ", "))")
+            }
+            
+            // 콜백으로 이벤트 배열 반환
+            completion(events)
+        }
+}
+
+
 
 
 
 
 
 #Preview {
-    CalendarView()
+    CalendarView(projectName :"asdf")
         .environmentObject(NavigationManager())
 }

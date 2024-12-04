@@ -1,5 +1,8 @@
-//프로젝트들 목록 + 새 프로젝트 생성
+
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
+
 
 struct ContentView: View {
     @StateObject private var navigationManager = NavigationManager()
@@ -9,7 +12,8 @@ struct ContentView: View {
     @State private var enteredProjectID = "" //추가할 프로젝트아이디
     @State private var enteredPassword = ""//추가할 비밀번호
     @State private var showAddProjectModal  = false //모달창
-    
+    @State private var isLoading = true // 로딩 상태
+
     
     var body: some View {
         NavigationStack(path: $navigationManager.path){
@@ -184,9 +188,35 @@ struct ContentView: View {
                             .foregroundColor(.black)
                     }
                 })
+                .onAppear(perform: fetchProjects) // 화면 로드 시 프로젝트 데이터 불러오기
             }
         }
         .environmentObject(navigationManager)
+    }
+    
+    func fetchProjects() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            
+            return
+        }
+
+        let db = Firestore.firestore()
+        db.collection("Project")
+            .whereField("memberIds", arrayContains: userId) // 현재 사용자가 속한 프로젝트만 필터링
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    
+                    return
+                }
+
+                if let snapshot = snapshot {
+                    // 프로젝트 이름 배열 업데이트
+                    self.projects = snapshot.documents.compactMap { document in
+                        document.data()["teamName"] as? String
+                    }
+                }
+                
+            }
     }
 }
 
@@ -259,6 +289,9 @@ struct AddProjectModalView: View {
         // 유효성 검사 로직 추가
         return id == "abcdefg" && password == "0000" // 예제 로직
     }
+    /// Firestore에서 현재 사용자의 프로젝트 목록 불러오기
+    
+    
 }
 
 struct ArcShape: Shape{
@@ -273,7 +306,12 @@ struct ArcShape: Shape{
                 )
                 return path
     }
+    
 }
+
+
+
+
 
 #Preview {
     ContentView()

@@ -1,13 +1,50 @@
 import SwiftUI
+import FirebaseFirestore
+
+
+
 
 struct SubmitView: View {
     var event: Event // Specific event details
     var selectedDate: Date
-    @State private var members: [Member] = [
-        Member(name: "김현경", hasSubmitted: false),
-        Member(name: "신준용", hasSubmitted: true),
-        Member(name: "정광석", hasSubmitted: false)
-    ]
+    @State private var members: [Member] = []
+    // Firebase에서 멤버를 가져오는 함수
+    func fetchMembersForEvent() {
+        let db = Firestore.firestore()
+        
+        // 특정 이벤트의 title로 참가자 목록을 가져오는 쿼리
+        db.collection("events")
+            .whereField("projectName", isEqualTo: event.projectName) // 프로젝트 이름으로 필터링
+            .whereField("title", isEqualTo: event.title) // 특정 이벤트 title로 필터링
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching members: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("No events found.")
+                    return
+                }
+                
+                // Firestore에서 데이터를 가져와 members 배열 업데이트
+                var fetchedMembers: [Member] = []
+                
+                for document in documents {
+                    let data = document.data()
+                    
+                    // 참가자 리스트를 가져와서 Members 배열에 추가
+                    if let participants = data["participants"] as? [String] {
+                        fetchedMembers = participants.map { Member(name: $0, hasSubmitted: false) }
+                    }
+                }
+                
+                // 멤버 데이터 업데이트
+                DispatchQueue.main.async {
+                    self.members = fetchedMembers
+                }
+            }
+    }
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
@@ -67,6 +104,10 @@ struct SubmitView: View {
         }
         .padding()
         .navigationTitle("제출 현황")
+        .onAppear {
+            fetchMembersForEvent() // View가 나타날 때 멤버 데이터를 불러옴
+        }
+
     }
 
 }
@@ -78,6 +119,6 @@ struct Member: Identifiable {
 }
 
 #Preview {
-    SubmitView(event: Event(title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date())
+    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date())
 }
 

@@ -64,7 +64,7 @@ struct ProjectHomeView: View {
                     }
                     Spacer()
                     Spacer()
-                    NavigationLink(destination: CalendarView()) {  // Project 객체를 넘김
+                    NavigationLink(destination: CalendarView(projectName: projectName)) {  // Project 객체를 넘김
                         VStack {
                             //Image(systemName: "calendar")
                             Image("calendar3")
