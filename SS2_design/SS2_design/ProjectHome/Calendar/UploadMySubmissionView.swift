@@ -1,44 +1,194 @@
-//일정에 대한 제출물 올리기
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct UploadMySubmissionView: View {
     var onSubmit: () -> Void
     
-    @State private var fileUploaded = false // Track file upload status
-    @State private var isSubmitted = false // Track submission completion status
+    @State private var uploadedFiles: [String] = [] // 업로드된 파일 목록
+    @State private var uploadedTexts: [String] = [] // 업로드된 텍스트 목록
+    @State private var isSubmitted = false // 제출 완료 상태
+    @State private var showDummyFilePicker = false // 더미 파일 선택
+    @State private var showTextInput = false // 텍스트 입력창 표시
+    @State private var newTextInput = "" // 새로운 텍스트 입력
+    @State private var showAlert = false // 알림창 표시
+    @State private var alertTitle = "" // 알림창 제목
+    @State private var alertMessage = "" // 알림창 메시지
+    
+    // 더미 파일 데이터
+    private let dummyFiles = [
+        URL(fileURLWithPath: "/Users/user/Documents/DummyFile1.pdf"),
+        URL(fileURLWithPath: "/Users/user/Documents/DummyFile2.docx"),
+        URL(fileURLWithPath: "/Users/user/Documents/DummyFile3.xlsx")
+    ]
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 40) {
             Text("과제 제출")
                 .font(.title)
+                .fontWeight(.semibold)
+                .fontDesign(.rounded)
+                .padding()
+                .frame(maxWidth: .infinity)
             
-            Button(action: {
-                // Simulate file upload
-                fileUploaded = true
-                isSubmitted = false // Reset submission status if re-uploading
-            }) {
-                Text(fileUploaded ? "파일 업로드 완료" : "파일 업로드")
-                    .foregroundColor(.blue)
+            VStack(alignment: .leading){
+                // 파일 추가 버튼
+                Button(action: {
+                    if !isSubmitted { // 제출 완료 시 파일 추가 불가
+                        showDummyFilePicker = true
+                    }
+                }) {
+                    Text("+ 파일 추가")
+                        .foregroundColor(isSubmitted ? .gray : .black)
+                }
+                .padding()
+                .frame(height:45)
+                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.yellow.opacity(0.6))
+                .cornerRadius(8)
+                .disabled(isSubmitted) // 제출 완료 시 비활성화
+                .actionSheet(isPresented: $showDummyFilePicker) {
+                    ActionSheet(
+                        title: Text("파일 선택"),
+                        message: Text("파일을 선택해주세요"),
+                        buttons: dummyFiles.map { file in
+                            .default(Text(file.lastPathComponent)) {
+                                if !uploadedFiles.contains(file.lastPathComponent) {
+                                    uploadedFiles.append(file.lastPathComponent)
+                                }
+                            }
+                        } + [.cancel()]
+                    )
+                }
+                // 업로드된 파일 및 텍스트 목록
+                if !uploadedFiles.isEmpty  {
+                    VStack(alignment: .leading, spacing: 10) {
+                        if !uploadedFiles.isEmpty {
+                            Text("업로드된 파일:")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            ForEach(uploadedFiles, id: \.self) { fileName in
+                                Text("• \(fileName)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.black)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+    
             }
-            .padding()
-            .background(fileUploaded ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
-            .cornerRadius(8)
             
+            VStack(alignment: .leading){
+                // 텍스트 추가 버튼
+                Button(action: {
+                    if !isSubmitted {
+                        showTextInput = true
+                    }
+                }) {
+                    Text("+ 텍스트 추가")
+                        .foregroundColor(isSubmitted ? .gray : .black)
+                }
+                .padding()
+                .frame(height:45)
+                .background(isSubmitted ? Color.gray.opacity(0.2) : Color.yellow.opacity(0.6))
+                .cornerRadius(8)
+                .disabled(isSubmitted) // 제출 완료 시 비활성화
+                .sheet(isPresented: $showTextInput) {
+                    VStack(spacing: 20) {
+                        Text("텍스트 입력")
+                            .font(.headline)
+                        TextField("URL 또는 내용을 입력하세요", text: $newTextInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+                        
+                        HStack {
+                            Button(action: {
+                                if !newTextInput.isEmpty {
+                                    uploadedTexts.append(newTextInput)
+                                    newTextInput = ""
+                                    showTextInput = false
+                                }
+                            }) {
+                                Text("추가")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.green)
+                                    .cornerRadius(8)
+                            }
+                            
+                            Button(action: {
+                                newTextInput = ""
+                                showTextInput = false
+                            }) {
+                                Text("취소")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.red)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    .padding()
+                }
+                
+                // 업로드된 파일 및 텍스트 목록
+                if !uploadedTexts.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        
+                        if !uploadedTexts.isEmpty {
+                            Text("업로드된 텍스트:")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            ForEach(uploadedTexts, id: \.self) { text in
+                                Text("• \(text)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.black)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                
+                
+            }
+            
+            
+            // 제출 버튼
             Button(action: {
-                if fileUploaded {
-                    onSubmit()
-                    isSubmitted = true
+                if !uploadedFiles.isEmpty || !uploadedTexts.isEmpty {
+                    if isSubmitted {
+                        // 다시 제출하기 처리
+                        uploadedFiles.removeAll()
+                        uploadedTexts.removeAll()
+                        isSubmitted = false
+                    } else {
+                        // 제출 처리
+                        onSubmit()
+                        isSubmitted = true
+                        alertTitle = "제출 완료"
+                        alertMessage = "파일 및 텍스트가 성공적으로 제출되었습니다."
+                        showAlert = true
+                    }
                 }
             }) {
-                Text(isSubmitted ? "제출 완료" : (fileUploaded ? "제출하기" : "다시 제출하기"))
+                Text(isSubmitted ? "다시 제출하기" : "제출하기")
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(fileUploaded ? Color.yellow.opacity(0.8) : Color.gray)
+                    .background((uploadedFiles.isEmpty && uploadedTexts.isEmpty) ? Color.gray : Color.yellow.opacity(0.8))
                     .cornerRadius(8)
                     .padding(.horizontal, 10)
             }
-            .disabled(!fileUploaded)
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(alertTitle),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("확인"))
+                )
+            }
+            Spacer()
         }
         .padding()
         .navigationTitle("과제 제출")
@@ -46,7 +196,7 @@ struct UploadMySubmissionView: View {
 }
 
 #Preview {
-    UploadMySubmissionView(onSubmit: {})
+    UploadMySubmissionView(onSubmit: {
+        print("제출 완료!")
+    })
 }
-
-

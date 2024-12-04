@@ -84,7 +84,7 @@ struct MemberSubmissionDetailView: View {
             }) {
                 Text("WMM")
                     .font(.headline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.black)
             }
             
             NavigationLink(destination: SettingView()) {
