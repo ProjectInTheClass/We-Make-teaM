@@ -2,6 +2,10 @@
 //팀프로젝트 방 생성
 import SwiftUI
 
+import FirebaseAuth
+import FirebaseFirestore
+
+
 struct CreateProjectView: View{
     @Environment(\.dismiss) var dismiss
     @Binding var projects: [String]
@@ -12,7 +16,8 @@ struct CreateProjectView: View{
     @State private var teamPWD: String = ""   //프로젝트방 비밀번호
     @State private var isPresentingCompletionView = false   //프로제트 생성완료
     @State private var teamID: String = "aHdldlxlIskd" //프로젝트 방검색 ID
-    
+    @State private var errorMessage: String = "" // 오류 메시지
+
     let memberCounts = Array(1...6) //팀 멤버수 1~5명까지로 제한
     let years = Array(2020...2025)
     let semesters = [1,2]
@@ -164,6 +169,7 @@ struct CreateProjectView: View{
         
                         Button(action:{
                             isPresentingCompletionView=true
+                            createProject()
                         }) {
                             Text("완료")
                                 .font(.title2)
@@ -206,6 +212,45 @@ struct CreateProjectView: View{
                     }
                 }
                 Spacer()
+            }
+        }
+    }
+    /// Firestore에 프로젝트 저장
+    func createProject() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            errorMessage = "사용자가 인증되지 않았습니다."
+            return
+        }
+        
+        guard !teamName.isEmpty else {
+            errorMessage = "팀명을 입력해주세요."
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let projectData: [String: Any] = [
+            "teamName": teamName,
+            "teamPWD" : teamPWD,
+            "memberCount": selectedMemberCount,
+            "year": selectedYear,
+            "semester": selectedSemester,
+            "memberIds": [userId], // 현재 사용자만 초기 멤버로 설정
+            "createdAt": Timestamp()
+        ]
+        
+        db.collection("Project").addDocument(data: projectData) { error in
+            if let error = error {
+                errorMessage = "프로젝트 생성 실패: \(error.localizedDescription)"
+            } else {
+                print("프로젝트 생성 성공!")
+                //projects.append(teamName) // 로컬 상태 업데이트
+                teamID = db.collection("Project").document().documentID
+                
+                isPresentingCompletionView = true // 완료 화면 표시
+                
+                
+               
+                   
             }
         }
     }

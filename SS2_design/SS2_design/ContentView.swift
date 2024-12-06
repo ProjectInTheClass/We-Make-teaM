@@ -7,7 +7,7 @@ import FirebaseFirestore
 struct ContentView: View {
     @StateObject private var navigationManager = NavigationManager()
     @State private var isPresentingCreateProject = false //새로운 프로젝트 생성
-    @State private var projects: [String] = ["소프트웨어 스튜디오2"] //생성된 프로젝트들
+    @State private var projects: [String] = [] //생성된 프로젝트들
     //프로젝트 아이디와 비밀번호로 추가
     @State private var enteredProjectID = "" //추가할 프로젝트아이디
     @State private var enteredPassword = ""//추가할 비밀번호
