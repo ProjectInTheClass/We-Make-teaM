@@ -267,7 +267,7 @@ struct AddEventView: View {
                 "URL" : ""
             ]
             
-            db.collection("Submissions").addDocument(data: submissionData) { error in
+            db.collection("Submission").addDocument(data: submissionData) { error in
                 if let error = error {
                     print("Submission 문서 저장 실패: \(error.localizedDescription)")
                 } else {

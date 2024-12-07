@@ -105,7 +105,7 @@ struct SubmitView: View {
             Spacer()
 
             NavigationLink(destination: UploadMySubmissionView(onSubmit: {
-                if let myIndex = members.firstIndex(where: { $0.name == "김현경" }) {
+                if let myIndex = members.firstIndex(where: { $0.name == "정광석" }) {
                     members[myIndex].hasSubmitted = true
                 }
             })) {

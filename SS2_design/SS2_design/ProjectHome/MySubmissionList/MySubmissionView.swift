@@ -1,8 +1,6 @@
-//나의 전체 제출목록들 보기
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
-
 
 struct TeamMember: Identifiable {
     let id = UUID()
@@ -20,19 +18,6 @@ struct Submission: Identifiable {
     let fileName: String
     let fileSize: String
 }
-
-// 예시 데이터
-
-private var submissions: [Submission] = [
-    Submission(title: "제출물 1", deadline: Calendar.current.date(byAdding: .day, value: 2, to: Date())!, priority: 3, isSubmitted: true, fileName: "project1.pdf", fileSize: "2MB"),
-    Submission(title: "제출물 2", deadline: Calendar.current.date(byAdding: .day, value: 5, to: Date())!, priority: 2, isSubmitted: true, fileName: "report.docx", fileSize: "500KB"),
-    Submission(title: "과제 1", deadline: Calendar.current.date(byAdding: .day, value: 1, to: Date())!, priority: 1, isSubmitted: true, fileName: "assignment1.pdf", fileSize: "1.5MB"),
-    Submission(title: "과제 2", deadline: Calendar.current.date(byAdding: .day, value: 10, to: Date())!, priority: 2, isSubmitted: false, fileName: "task.docx", fileSize: "750KB"),
-    Submission(title: "프로젝트 발표", deadline: Calendar.current.date(byAdding: .day, value: 3, to: Date())!, priority: 1, isSubmitted: false, fileName: "presentation.pptx", fileSize: "4MB"),
-    Submission(title: "과제 3", deadline: Calendar.current.date(byAdding: .day, value: 1, to: Date())!, priority: 1, isSubmitted: false, fileName: "assignment2.pdf", fileSize: "2MB"),
-    Submission(title: "최종 보고서", deadline: Calendar.current.date(byAdding: .day, value: 7, to: Date())!, priority: 2, isSubmitted: false, fileName: "final_report.pdf", fileSize: "1MB"),
-    Submission(title: "퀴즈 1", deadline: Calendar.current.date(byAdding: .hour, value: 12, to: Date())!, priority: 1, isSubmitted: false, fileName: "quiz1.pdf", fileSize: "200KB")
-]
 
 struct MySubmissionView: View {
     @EnvironmentObject var navigationManager: NavigationManager
@@ -63,26 +48,28 @@ struct MySubmissionView: View {
     // Firestore에서 제출 데이터를 가져오는 함수
     func loadSubmissions() {
         let db = Firestore.firestore()
-        let submissionsRef = db.collection("Submission")
-        print("hello")
+        let submissionsRef = db.collection("submissions")
+        
         // Firestore에서 데이터를 가져오는 로직
         submissionsRef.whereField("memberId", isEqualTo: currentUserId)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    errorMessage = "데이터를 불러오는 중 오류가 발생했습니다: \(error.localizedDescription)"
-                    isLoading = false
+                    self.errorMessage = "데이터를 불러오는 중 오류가 발생했습니다: \(error.localizedDescription)"
+                    self.isLoading = false
                     return
                 }
-                
+
                 // Firestore 데이터에서 Submission 객체로 변환
                 self.submissions = snapshot?.documents.compactMap { doc -> Submission? in
                     let data = doc.data()
+                    // 데이터가 올바른지 확인
                     guard let title = data["title"] as? String,
                           let deadlineTimestamp = data["deadline"] as? Timestamp,
                           let priority = data["priority"] as? Int,
                           let isSubmitted = data["isSubmitted"] as? Bool,
                           let fileName = data["fileName"] as? String,
-                          let fileSize = data["fileSize"] as? String else {
+                          let fileSize = data["fileSize"] as? String
+                    else {
                         return nil
                     }
                     
@@ -90,8 +77,8 @@ struct MySubmissionView: View {
                     
                     return Submission(title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize)
                 } ?? []
-                
-                isLoading = false
+
+                self.isLoading = false
             }
     }
 
@@ -265,7 +252,6 @@ struct SubmissionDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
 
 #Preview {
     MySubmissionView(projectName: "소프트웨어스튜디오2", teamMembers: [
