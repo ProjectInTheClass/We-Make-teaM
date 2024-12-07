@@ -17,7 +17,7 @@ struct CreateProjectView: View{
     @State private var isPresentingCompletionView = false   //프로제트 생성완료
     @State private var teamID: String = "aHdldlxlIskd" //프로젝트 방검색 ID
     @State private var errorMessage: String = "" // 오류 메시지
-
+    @State private var events : [String] = []
     let memberCounts = Array(1...6) //팀 멤버수 1~5명까지로 제한
     let years = Array(2020...2025)
     let semesters = [1,2]
@@ -230,7 +230,7 @@ struct CreateProjectView: View{
         let db = Firestore.firestore()
         let projectData: [String: Any] = [
             "teamName": teamName,
-            "teamPWD" : teamPWD,
+            "teamPWD": teamPWD,
             "memberCount": selectedMemberCount,
             "year": selectedYear,
             "semester": selectedSemester,
@@ -238,22 +238,26 @@ struct CreateProjectView: View{
             "createdAt": Timestamp()
         ]
         
-        db.collection("Project").addDocument(data: projectData) { error in
+        // Firestore에 문서 추가
+        var ref: DocumentReference? = nil
+        ref = db.collection("Project").addDocument(data: projectData) { error in
             if let error = error {
-                errorMessage = "프로젝트 생성 실패: \(error.localizedDescription)"
+                self.errorMessage = "프로젝트 생성 실패: \(error.localizedDescription)"
             } else {
-                print("프로젝트 생성 성공!")
-                //projects.append(teamName) // 로컬 상태 업데이트
-                teamID = db.collection("Project").document().documentID
-                
-                isPresentingCompletionView = true // 완료 화면 표시
-                
-                
-               
-                   
+                // 문서가 성공적으로 저장되면 documentID를 가져와서 teamID에 업데이트
+                if let ref = ref {
+                    self.teamID = ref.documentID
+                    print("생성된 문서 ID: \(self.teamID)")
+                }
+                self.isPresentingCompletionView = true // 완료 화면 표시
             }
         }
     }
+
+
+
+   
+    
 }
 
 

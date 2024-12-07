@@ -7,6 +7,7 @@ import FirebaseFirestore
 struct ContentView: View {
     @StateObject private var navigationManager = NavigationManager()
     @State private var isPresentingCreateProject = false //새로운 프로젝트 생성
+    
     @State private var projects: [String] = [] //생성된 프로젝트들
     //프로젝트 아이디와 비밀번호로 추가
     @State private var enteredProjectID = "" //추가할 프로젝트아이디
@@ -253,13 +254,7 @@ struct AddProjectModalView: View {
             
             Button(action: {
                 // 입력된 ID와 비밀번호가 조건을 만족하면 프로젝트 추가
-                if validateProject(id: enteredProjectID, password: enteredPassword) {
-                    projects.append(enteredProjectID) // 프로젝트 추가
-                    showModal = false // 모달 창 닫기
-                } else {
-                    // 입력값이 유효하지 않을 경우 처리
-                    print("Invalid project ID or password")
-                }
+                addProjectToList(id: enteredProjectID, password: enteredPassword)
             }) {
                 Text("추가")
                     .foregroundColor(.black)
@@ -284,15 +279,53 @@ struct AddProjectModalView: View {
         }
     }
     
-    // 프로젝트 ID와 비밀번호 유효성 검사
-    func validateProject(id: String, password: String) -> Bool {
-        // 유효성 검사 로직 추가
-        return id == "abcdefg" && password == "0000" // 예제 로직
+    func addProjectToList(id: String, password: String) {
+        let db = Firestore.firestore()
+        
+        // Firestore에서 프로젝트 검색
+        db.collection("Project")
+            .whereField("teamPWD", isEqualTo: password) // 비밀번호 일치 확인
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching project: \(error)")
+                    return
+                }
+                
+                if let snapshot = snapshot, !snapshot.isEmpty {
+                    // 프로젝트가 존재하면
+                    for document in snapshot.documents {
+                        let projectID = document.documentID // 자동 생성된 documentID
+                        var memberIds = document.data()["memberIds"] as? [String] ?? []
+                        
+                        // 사용자의 uid 추가 (중복 확인)
+                        if !memberIds.contains(Auth.auth().currentUser?.uid ?? "") {
+                            memberIds.append(Auth.auth().currentUser?.uid ?? "")
+                            
+                            // memberIds 업데이트
+                            db.collection("Project").document(projectID).updateData([
+                                "memberIds": memberIds
+                            ]) { error in
+                                if let error = error {
+                                    print("Error updating memberIds: \(error)")
+                                } else {
+                                    print("UID added to project successfully")
+                                    self.projects.append(document.data()["teamName"] as! String) // 프로젝트 리스트에 추가
+                                    self.showModal = false // 모달 창 닫기
+                                }
+                            }
+                        } else {
+                            print("You are already a member of this project.")
+                        }
+                    }
+                } else {
+                    print("프로젝트가 존재하지 않거나 비밀번호가 잘못되었습니다.")
+                }
+            }
     }
-    /// Firestore에서 현재 사용자의 프로젝트 목록 불러오기
-    
-    
+
+
 }
+
 
 struct ArcShape: Shape{
     func path(in rect: CGRect) -> Path{

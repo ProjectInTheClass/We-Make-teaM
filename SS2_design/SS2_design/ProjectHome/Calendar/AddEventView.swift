@@ -2,12 +2,11 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-
 struct AddEventView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var events: [Event]
     var initialDate: Date
-    var projectName : String
+    var projectName: String
     @State private var selectedColor: Color = .red
     @State private var title: String = ""
     @State private var endTime: Date = Date()
@@ -15,15 +14,14 @@ struct AddEventView: View {
     @State private var reminder: String = "종료 1일 전"
     @State private var importance: Int = 0  // 중요도 (별점 수)
     
-    // 프로젝트 방의 멤버 더미 데이터
-    @State private var members: [String] = ["김현경", "신준용", "정광석"]
-    @State private var selectedMembers: [String] = [] // 선택된 멤버를 저장
+    // 프로젝트 방의 멤버 ID와 이름을 관리
+    @State private var membersId: [String] = []  // ID 목록
+    @State private var members: [String: String] = [:]  // ID와 이름을 매핑하는 딕셔너리
+    @State private var selectedMembers: [String] = [] // 선택된 멤버의 ID 목록
     
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple]
-    let reminders = ["종료 1일 전", "종료 12시간 전", "종료 6시간 전", "종료 2시간 전", "종료 1시간 전" , "종료 30분 전"]
+    let reminders = ["종료 1일 전", "종료 12시간 전", "종료 6시간 전", "종료 2시간 전", "종료 1시간 전", "종료 30분 전"]
 
-  
-    
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 20) {
@@ -32,7 +30,6 @@ struct AddEventView: View {
                     .fontDesign(.rounded)
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
-    
                 
                 HStack(spacing: 15) {
                     Text("* 일정 제목:")
@@ -57,26 +54,23 @@ struct AddEventView: View {
                             .labelsHidden() // Label 숨기기
                             .padding(.trailing, 150)
                     }
-                    
                 }
-
-            
                 
                 // 참여 인원 선택
                 VStack(alignment: .leading) {
                     Text("* 참여 인원:")
                         .fontWeight(.semibold)
-                    ForEach(members, id: \.self) { member in
+                    ForEach(membersId, id: \.self) { memberId in
                         HStack {
-                            Text(member)
-                
-                            Image(systemName: selectedMembers.contains(member) ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(selectedMembers.contains(member) ? .blue : .gray)
+                            Text(members[memberId] ?? "Unknown")  // ID에 해당하는 이름 표시
+                            
+                            Image(systemName: selectedMembers.contains(memberId) ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(selectedMembers.contains(memberId) ? .blue : .gray)
                                 .onTapGesture {
-                                    if let index = selectedMembers.firstIndex(of: member) {
+                                    if let index = selectedMembers.firstIndex(of: memberId) {
                                         selectedMembers.remove(at: index)
                                     } else {
-                                        selectedMembers.append(member)
+                                        selectedMembers.append(memberId)
                                     }
                                 }
                         }
@@ -103,9 +97,8 @@ struct AddEventView: View {
                         }
                     }
                     .pickerStyle(MenuPickerStyle())
-                    .accentColor(.black)//default 색상
+                    .accentColor(.black) //default 색상
                     .foregroundColor(.black) // Picker 텍스트 색상
-                    //.background(Color.yellow.opacity(0.2)) // Picker 배경색 설정
                     .border(Color.gray.opacity(0.2))
                     .cornerRadius(5)
                 }
@@ -145,8 +138,7 @@ struct AddEventView: View {
                 Spacer()
                 
                 Button(action: {
-                    let newEvent = Event(projectName: projectName, title: title, date: endTime, location: location, color: selectedColor, participants: selectedMembers)
-                    events.append(newEvent)
+                    saveEventToFirestore()
                     dismiss()
                 }) {
                     Text("만들기")
@@ -160,7 +152,6 @@ struct AddEventView: View {
                 .frame(width: 300)
                 .frame(maxWidth: .infinity)
                 Spacer()
-                
             }
             
             .padding()
@@ -176,61 +167,127 @@ struct AddEventView: View {
                 }
             }
             .padding(.horizontal, 10)
+            .onAppear {
+                fetchMembersFromFirestore()  // Firestore에서 멤버 정보 가져오기
+            }
         }
-        
     }
-    
-    
+
+    // Firestore에서 멤버 정보 가져오는 메서드
+    // Firestore에서 멤버 정보 가져오는 메서드
+    func fetchMembersFromFirestore() {
+        let db = Firestore.firestore()
+        
+        // 프로젝트 이름으로 프로젝트 문서를 찾기
+        db.collection("Project")
+            .whereField("teamName", isEqualTo: projectName)  // 'name' 필드가 프로젝트 이름인 경우
+            .getDocuments { querySnapshot, error in
+                if let error = error {
+                    print("프로젝트 멤버 불러오기 실패: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let snapshot = querySnapshot, !snapshot.isEmpty {
+                    let document = snapshot.documents.first
+                    if let membersList = document?.data()["memberIds"] as? [String] {
+                        self.membersId = membersList
+                        print("hello1")
+                        
+                        // 각 멤버의 ID에 대해 이름을 가져와서 members 딕셔너리에 저장
+                        for memberId in membersList {
+                            db.collection("users").document(memberId)
+                                .getDocument { userDocument, error in
+                                    if let userDocument = userDocument, userDocument.exists {
+                                        if let name = userDocument.data()?["nickname"] as? String {
+                                            self.members[memberId] = name
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                } else {
+                    print("프로젝트 이름에 해당하는 문서를 찾을 수 없습니다.")
+                }
+            }
+    }
+
+
     // Firestore에 이벤트 저장 메서드
     func saveEventToFirestore() {
-        // 새로운 이벤트 데이터 구성
         let newEvent = Event(
-            projectName : projectName,
+            projectName: projectName,
             title: title,
-            date: endTime,
+            date: initialDate,
             location: location,
             color: selectedColor,
-            participants: selectedMembers
+            participants: selectedMembers  // ID로 저장
         )
         
-        // Firestore에 저장할 데이터
         let db = Firestore.firestore()
         let eventData: [String: Any] = [
-            "projectName" : projectName,
+            "projectName": projectName,
             "title": title,
-            "date": endTime,
-            "color": selectedColor.description, // 색상을 문자열로 변환
+            "date": initialDate,
+            "color": selectedColor.description,
             "location": location,
             "participants": selectedMembers,
-            "createdAt": FieldValue.serverTimestamp() // Firestore 서버 시간
+            "importance": importance,
+            "createdAt": FieldValue.serverTimestamp() // 서버 시간 추가
         ]
-        
-        // Firestore에 데이터 추가
-        db.collection("events").addDocument(data: eventData) { error in
+        var ref: DocumentReference? = nil
+        ref = db.collection("events").addDocument(data: eventData) { error in
             if let error = error {
                 print("Firestore 저장 실패: \(error.localizedDescription)")
             } else {
                 print("Firestore 저장 성공!")
-                events.append(newEvent) // 로컬 데이터 업데이트
-                dismiss() // 화면 닫기
+                events.append(newEvent)  // 로컬 데이터 업데이트
+                
+                
+               
+               // 참여한 멤버에 대해 submission 문서 추가
+                addSubmissionDocuments(eventId: ref?.documentID ?? "")
+                dismiss()  // 화면 닫기
+            }
+        }
+    }
+    
+    // 각 멤버에 대해 submission 문서를 추가하는 메서드
+    func addSubmissionDocuments(eventId: String) {
+        let db = Firestore.firestore()
+
+        // 선택된 멤버들에 대해 submission 문서를 생성
+        for memberId in selectedMembers {
+            let submissionData: [String: Any] = [
+                "eventId": eventId,
+                "memberId": memberId,
+                "deadline": Timestamp(date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!), // 예시: 마감 시간을 하루 전으로 설정
+                "fileName": "",
+                "isSubmitted": false,
+                "priority": importance, // 중요도 값 추가
+                "URL" : ""
+            ]
+            
+            db.collection("Submissions").addDocument(data: submissionData) { error in
+                if let error = error {
+                    print("Submission 문서 저장 실패: \(error.localizedDescription)")
+                } else {
+                    print("Submission 문서 저장 성공!")
+                }
             }
         }
     }
 }
 
-
-
-
 struct Event: Identifiable {
     let id = UUID()
-    let projectName : String
+    let projectName: String
     let title: String
     let date: Date
     let location: String
     let color: Color
-    let participants: [String] // 참여 인원 정보 추가
+    let participants: [String]  // 참여 인원 ID 목록
 }
 
 #Preview {
-    CalendarView(projectName : "asdf")
+    AddEventView(events: .constant([]), initialDate: Date(), projectName: "asdf")
 }

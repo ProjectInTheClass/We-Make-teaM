@@ -63,8 +63,8 @@ struct MySubmissionView: View {
     // Firestore에서 제출 데이터를 가져오는 함수
     func loadSubmissions() {
         let db = Firestore.firestore()
-        let submissionsRef = db.collection("submissions")
-        
+        let submissionsRef = db.collection("Submission")
+        print("hello")
         // Firestore에서 데이터를 가져오는 로직
         submissionsRef.whereField("memberId", isEqualTo: currentUserId)
             .getDocuments { snapshot, error in

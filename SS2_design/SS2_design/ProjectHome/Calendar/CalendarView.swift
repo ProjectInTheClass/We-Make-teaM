@@ -354,6 +354,7 @@ func fetchEventsFromFirestore(for projectName: String, completion: @escaping ([E
                     let colorName = data["color"] as? String,
                     let location = data["location"] as? String,
                     let participants = data["participants"] as? [String]
+                    
                 else {
                     return nil
                 }

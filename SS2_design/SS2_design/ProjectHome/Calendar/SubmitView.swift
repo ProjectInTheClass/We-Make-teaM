@@ -29,18 +29,36 @@ struct SubmitView: View {
                 
                 // Firestore에서 데이터를 가져와 members 배열 업데이트
                 var fetchedMembers: [Member] = []
-                
+                let dispatchGroup = DispatchGroup()  // 동기화를 위한 DispatchGroup 사용
+
                 for document in documents {
                     let data = document.data()
                     
-                    // 참가자 리스트를 가져와서 Members 배열에 추가
+                    // 참가자 리스트를 가져와서 멤버를 처리
                     if let participants = data["participants"] as? [String] {
-                        fetchedMembers = participants.map { Member(name: $0, hasSubmitted: false) }
+                        for memberId in participants {
+                            dispatchGroup.enter()  // DispatchGroup에 엔트리 추가
+                            
+                            // users 컬렉션에서 memberId에 해당하는 닉네임을 가져옴
+                            db.collection("users").document(memberId).getDocument { userSnapshot, error in
+                                if let error = error {
+                                    print("Error fetching user data: \(error.localizedDescription)")
+                                } else if let userData = userSnapshot?.data() {
+                                    // 닉네임을 가져와서 멤버 객체에 추가
+                                    if let nickname = userData["nickname"] as? String {
+                                        let member = Member(name: nickname, hasSubmitted: false)
+                                        fetchedMembers.append(member)
+                                    }
+                                }
+                                
+                                dispatchGroup.leave()  // DispatchGroup에서 엔트리 제거
+                            }
+                        }
                     }
                 }
-                
-                // 멤버 데이터 업데이트
-                DispatchQueue.main.async {
+
+                // 모든 비동기 요청이 완료된 후 멤버 데이터 업데이트
+                dispatchGroup.notify(queue: .main) {
                     self.members = fetchedMembers
                 }
             }
