@@ -26,12 +26,10 @@ struct MySubmissionView: View {
     var projectName: String
     var teamMembers: [TeamMember]
     
-    // Firestore에서 제출 데이터를 로드하는 상태 변수
     @State private var submissions: [Submission] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
 
-    // 미완료와 완료 항목을 별도로 나누기
     var unfinishedSubmissions: [Submission] {
         submissions.filter { !$0.isSubmitted }.sorted { $0.deadline < $1.deadline }
     }
@@ -40,17 +38,15 @@ struct MySubmissionView: View {
         submissions.filter { $0.isSubmitted }.sorted { $0.deadline > $1.deadline }
     }
 
-    // 현재 로그인한 사용자의 ID를 가져오기
     var currentUserId: String {
         return Auth.auth().currentUser?.uid ?? ""
     }
 
-    // Firestore에서 제출 데이터를 가져오는 함수
     func loadSubmissions() {
         let db = Firestore.firestore()
-        let submissionsRef = db.collection("submissions")
+        let submissionsRef = db.collection("Submission")
         
-        // Firestore에서 데이터를 가져오는 로직
+        isLoading = true
         submissionsRef.whereField("memberId", isEqualTo: currentUserId)
             .getDocuments { snapshot, error in
                 if let error = error {
@@ -58,28 +54,25 @@ struct MySubmissionView: View {
                     self.isLoading = false
                     return
                 }
+                print(currentUserId)
 
-                // Firestore 데이터에서 Submission 객체로 변환
                 self.submissions = snapshot?.documents.compactMap { doc -> Submission? in
                     let data = doc.data()
-                    // 데이터가 올바른지 확인
                     guard let title = data["title"] as? String,
                           let deadlineTimestamp = data["deadline"] as? Timestamp,
                           let priority = data["priority"] as? Int,
                           let isSubmitted = data["isSubmitted"] as? Bool,
                           let fileName = data["fileName"] as? String,
-                          let fileSize = data["fileSize"] as? String
-                    else {
+                          let fileSize = data["fileSize"] as? String else {
                         return nil
                     }
-                    
+
                     let deadline = deadlineTimestamp.dateValue()
-                    
                     return Submission(title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize)
                 } ?? []
-
                 self.isLoading = false
             }
+        print(submissions)
     }
 
     var body: some View {
@@ -97,110 +90,55 @@ struct MySubmissionView: View {
                     .foregroundColor(.red)
             } else {
                 ScrollView {
-                    // 미완료 과제
                     Divider()
-                        .background(Color.gray.opacity(0.7))
-                        .padding(.vertical, 15)
-                        .padding(10)
                         .overlay(
                             Text("제출 미완료")
                                 .font(.headline)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
+                                .padding()
                                 .background(Color.white)
                         )
-                        .frame(maxWidth: .infinity)
                     ForEach(unfinishedSubmissions) { submission in
                         NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
                             VStack(alignment: .leading) {
-                                HStack {
-                                    Text(submission.title)
-                                        .font(submission.priority == 1 ? .title3 : .headline)
-                                        .foregroundColor(.primary)
-
-                                    Spacer()
-                                    Text("중요도: \(submission.priority)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-
+                                Text(submission.title)
+                                    .font(.headline)
                                 Text("마감일: \(submission.deadline, style: .date)")
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
                             }
                             .padding()
                             .background(getDeadlineColor(for: submission))
                             .cornerRadius(10)
-                            .padding(.horizontal)
                         }
                     }
 
-                    // 구분선
-                    if !unfinishedSubmissions.isEmpty && !finishedSubmissions.isEmpty {
-                        Divider()
-                            .background(Color.gray.opacity(0.7))
-                            .padding(.vertical, 15)
-                            .padding(10)
-                            .overlay(
-                                Text("제출 완료")
-                                    .font(.headline)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(Color.white)
-                            )
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    // 완료 과제
+                    Divider()
+                        .overlay(
+                            Text("제출 완료")
+                                .font(.headline)
+                                .padding()
+                                .background(Color.white)
+                        )
                     ForEach(finishedSubmissions) { submission in
                         NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
                             VStack(alignment: .leading) {
-                                HStack {
-                                    Text(submission.title)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-
-                                    Spacer()
-                                    Text("중요도: \(submission.priority)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-
+                                Text(submission.title)
+                                    .font(.headline)
                                 Text("마감일: \(submission.deadline, style: .date)")
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
                             }
                             .padding()
                             .background(Color.yellow.opacity(0.4))
                             .cornerRadius(10)
-                            .padding(.horizontal)
                         }
                     }
                 }
             }
         }
-        .navigationTitle("나의 제출")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarItems(trailing: HStack {
-            Button(action: {
-                navigationManager.resetToRoot()
-            }) {
-                Text("WMM")
-                    .font(.headline)
-                    .foregroundColor(.black)
-            }
-
-            NavigationLink(destination: SettingView()) {
-                Image(systemName: "gearshape.fill")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.black)
-            }
-        })
         .onAppear {
             loadSubmissions()
         }
     }
+
 
     // 마감일까지 남은 일자에 따라 색상 결정
     func getDeadlineColor(for submission: Submission) -> Color {

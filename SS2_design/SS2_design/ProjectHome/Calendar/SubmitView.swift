@@ -8,6 +8,7 @@ struct SubmitView: View {
     var event: Event // Specific event details
     var selectedDate: Date
     @State private var members: [Member] = []
+    @State public var eventid : String
     // Firebase에서 멤버를 가져오는 함수
     func fetchMembersForEvent() {
         let db = Firestore.firestore()
@@ -33,7 +34,7 @@ struct SubmitView: View {
 
                 for document in documents {
                     let data = document.data()
-                    
+                    let evendId = document.documentID
                     // 참가자 리스트를 가져와서 멤버를 처리
                     if let participants = data["participants"] as? [String] {
                         for memberId in participants {
@@ -108,7 +109,7 @@ struct SubmitView: View {
                 if let myIndex = members.firstIndex(where: { $0.name == "정광석" }) {
                     members[myIndex].hasSubmitted = true
                 }
-            })) {
+            }, event : eventid)) {
                 Text("과제 제출하러 가기")
                     .foregroundColor(.black)
                     .padding()
@@ -137,6 +138,7 @@ struct Member: Identifiable {
 }
 
 #Preview {
-    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date())
+    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date(), eventid: "1CobECae5xKKErSf7HjX"
+)
 }
 

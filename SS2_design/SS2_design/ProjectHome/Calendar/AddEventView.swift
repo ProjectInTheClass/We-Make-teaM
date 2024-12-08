@@ -258,13 +258,15 @@ struct AddEventView: View {
         // 선택된 멤버들에 대해 submission 문서를 생성
         for memberId in selectedMembers {
             let submissionData: [String: Any] = [
+                "title" : title,
                 "eventId": eventId,
                 "memberId": memberId,
                 "deadline": Timestamp(date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!), // 예시: 마감 시간을 하루 전으로 설정
                 "fileName": "",
                 "isSubmitted": false,
                 "priority": importance, // 중요도 값 추가
-                "URL" : ""
+                "URL" : "",
+                "fileSize" : ""
             ]
             
             db.collection("Submission").addDocument(data: submissionData) { error in
