@@ -262,10 +262,10 @@ struct AddEventView: View {
                 "eventId": eventId,
                 "memberId": memberId,
                 "deadline": Timestamp(date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!), // 예시: 마감 시간을 하루 전으로 설정
-                "fileName": "",
+                "fileName": [],
                 "isSubmitted": false,
                 "priority": importance, // 중요도 값 추가
-                "URL" : "",
+                "URL" : [],
                 "fileSize" : ""
             ]
             

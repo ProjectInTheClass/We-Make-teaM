@@ -8,7 +8,7 @@ struct SubmitView: View {
     var event: Event // Specific event details
     var selectedDate: Date
     @State private var members: [Member] = []
-    @State public var eventid : String
+    @State private var eventid : String = ""
     // Firebase에서 멤버를 가져오는 함수
     func fetchMembersForEvent() {
         let db = Firestore.firestore()
@@ -34,25 +34,38 @@ struct SubmitView: View {
 
                 for document in documents {
                     let data = document.data()
-                    let evendId = document.documentID
+                    eventid = document.documentID
                     // 참가자 리스트를 가져와서 멤버를 처리
                     if let participants = data["participants"] as? [String] {
                         for memberId in participants {
                             dispatchGroup.enter()  // DispatchGroup에 엔트리 추가
                             
-                            // users 컬렉션에서 memberId에 해당하는 닉네임을 가져옴
+                            // users 컬렉션에서 memberId에 해당하는 사용자 데이터를 가져옴
                             db.collection("users").document(memberId).getDocument { userSnapshot, error in
                                 if let error = error {
                                     print("Error fetching user data: \(error.localizedDescription)")
                                 } else if let userData = userSnapshot?.data() {
-                                    // 닉네임을 가져와서 멤버 객체에 추가
+                                    // 닉네임을 가져오고, isSubmitted 값을 Firestore에서 가져와서 사용
                                     if let nickname = userData["nickname"] as? String {
-                                        let member = Member(name: nickname, hasSubmitted: false)
-                                        fetchedMembers.append(member)
+                                        // 해당 멤버의 isSubmitted 상태를 가져오기
+                                        db.collection("Submission")
+                                            .whereField("eventId", isEqualTo: self.eventid)  // 이벤트 ID로 필터링
+                                            .whereField("memberId", isEqualTo: memberId)   // 멤버 ID로 필터링
+                                            .getDocuments { submissionSnapshot, error in
+                                                if let error = error {
+                                                    print("Error fetching submission status: \(error.localizedDescription)")
+                                                } else if let submissionDocuments = submissionSnapshot?.documents, let submissionDoc = submissionDocuments.first {
+                                                    // isSubmitted 값 가져오기
+                                                    let isSubmitted = submissionDoc["isSubmitted"] as? Bool ?? false
+                                                    
+                                                    // 멤버 객체 생성
+                                                    let member = Member(name: nickname, hasSubmitted: isSubmitted)
+                                                    fetchedMembers.append(member)
+                                                }
+                                                dispatchGroup.leave()  // DispatchGroup에서 엔트리 제거
+                                            }
                                     }
                                 }
-                                
-                                dispatchGroup.leave()  // DispatchGroup에서 엔트리 제거
                             }
                         }
                     }
@@ -64,6 +77,7 @@ struct SubmitView: View {
                 }
             }
     }
+
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
@@ -138,7 +152,7 @@ struct Member: Identifiable {
 }
 
 #Preview {
-    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date(), eventid: "1CobECae5xKKErSf7HjX"
+    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date()
 )
 }
 

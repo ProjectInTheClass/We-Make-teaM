@@ -3,15 +3,15 @@ import SwiftUI
 import FirebaseFirestore
 import UIKit
 
-
+// 캘린더 화면
 struct CalendarView: View {
     @State private var selectedDate: Date = Date()
     @State private var eventsForSelectedDate: [Event] = []
     @State private var isPresentingAddEventView = false
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var allEvents: [Event] = []
-    var projectName : String
-    
+    var projectName: String
+
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
@@ -20,48 +20,28 @@ struct CalendarView: View {
         formatter.dateFormat = "yyyy년 M월 d일"
         return formatter
     }
-    
+
     var body: some View {
         VStack {
             CalendarHeader(selectedDate: $selectedDate)
-            //Divider()
-            CalendarGrid(selectedDate: $selectedDate, events: allEvents) { date in
-                loadEvents(for: date)
-            }
+            
+            CalendarGrid(
+                selectedDate: $selectedDate,
+                events: allEvents,
+                onDateSelected: { date in loadEvents(for: date) }
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.gray.opacity(0.5), lineWidth: 1)
             )
             
-            
             // 일정 리스트
             ScrollView {
                 if !eventsForSelectedDate.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("\(selectedDate, formatter: dateFormatter) - \(eventsForSelectedDate.count)개 일정")
-                            .font(.headline)
-                            .padding(.leading, 10)
-                            .frame(maxWidth: .infinity)
-                  
-                        
-                        ForEach(eventsForSelectedDate) { event in
-                            NavigationLink(destination: SubmitView(event: event, selectedDate: selectedDate)) {
-                                HStack {
-                                    Circle()
-                                        .fill(event.color)
-                                        .frame(width: 10, height: 10)
-                                    Text(event.title)
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.white)
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                                .padding(.horizontal, 10)
-                            }
-                        }
-                    }
+                    EventListView(
+                        eventsForSelectedDate: eventsForSelectedDate,
+                        selectedDate: selectedDate
+                    )
                 } else {
                     Text("일정이 없습니다")
                         .padding(.top, 20)
@@ -70,79 +50,109 @@ struct CalendarView: View {
             }
             
             // 일정 추가 버튼
-            Button(action: {
-                isPresentingAddEventView = true
-            }) {
-                Text("+ 일정 추가하기")
-                    .foregroundColor(.black)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .frame(width:300)
-                    .background(Color.yellow.opacity(0.6))
-                    .border(Color.gray, width: 1.3)
-                    .cornerRadius(3)
-                    .padding(.horizontal, 10)
-            }
-            .padding(.top, 20)
-            .sheet(isPresented: $isPresentingAddEventView) {
-                AddEventView(events: $allEvents, initialDate: selectedDate, projectName:projectName)
-                    .onDisappear {
-                        loadEvents(for: selectedDate)
-                    }
-            }
+            AddEventButton(isPresentingAddEventView: $isPresentingAddEventView)
+        }
+        .sheet(isPresented: $isPresentingAddEventView) {
+            AddEventView(events: $allEvents, initialDate: selectedDate, projectName: projectName)
+                .onDisappear {
+                    loadEvents(for: selectedDate)
+                }
         }
         .onAppear {
-           // Firestore에서 이벤트 가져오기
-           fetchEventsFromFirestore(for: projectName) { events in
-               allEvents = events
-               loadEvents(for: selectedDate)
-           }
-       }
-        .navigationTitle("캘린더")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarItems(trailing: HStack {
-            Button(action: {
-                navigationManager.resetToRoot()
-            }) {
-                Text("WMM")
-                    .font(.headline)
-                    .foregroundColor(.black)
-            }
-            
-            NavigationLink(destination: SettingView()) {
-                Image(systemName: "gearshape.fill")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.black)
-            }
-        })
-    }
-    
-    func loadDummyEvents() -> [Event] {
-        var events: [Event] = []
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        let event1 = ("asdf","2024-11-05", "더미데이터 작성", "회의실 A", Color.blue, ["김현경", "신준용"])
-        let event2 = ("asdf","2024-11-12", "Data schema 짜기", "온라인", Color.green, ["신준용", "정광석"])
-        let event3 = ("asdf","2024-11-19", "git 올리기", "사무실 2층", Color.orange, ["김현경", "신준용","정광석"])
-            
-        let eventsData = [event1, event2, event3]
-        
-        for (projectName, dateString, title, location, color, participants) in eventsData {
-            if let date = formatter.date(from: dateString) {
-                events.append(Event(projectName : projectName, title: title, date: date, location: location, color: color, participants: participants))
+            fetchEventsFromFirestore(for: projectName) { events in
+                allEvents = events
+                loadEvents(for: selectedDate)
             }
         }
-        
-        return events
+        .navigationTitle("캘린더")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarItems(
+            trailing: HStack {
+                Button(action: {
+                    navigationManager.resetToRoot()
+                }) {
+                    Text("WMM")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                }
+                NavigationLink(destination: SettingView()) {
+                    Image(systemName: "gearshape.fill")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .foregroundColor(.black)
+                }
+            }
+        )
     }
-    
+
     func loadEvents(for date: Date) {
-        eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.projectName == projectName }
+        eventsForSelectedDate = allEvents.filter {
+            Calendar.current.isDate($0.date, inSameDayAs: date) && $0.projectName == projectName
+        }
     }
-    
+}
+
+// 일정 리스트 뷰
+struct EventListView: View {
+    var eventsForSelectedDate: [Event]
+    var selectedDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(selectedDate, formatter: dateFormatter) - \(eventsForSelectedDate.count)개 일정")
+                .font(.headline)
+                .padding(.leading, 10)
+                .frame(maxWidth: .infinity)
+            
+            ForEach(eventsForSelectedDate) { event in
+                NavigationLink(destination: SubmitView(event: event, selectedDate: selectedDate)) {
+                    HStack {
+                        Circle()
+                            .fill(event.color)
+                            .frame(width: 10, height: 10)
+                        Text(event.title)
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                    .padding(.horizontal, 10)
+                }
+            }
+        }
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 M월 d일"
+        return formatter
+    }
+}
+
+// 일정 추가 버튼
+struct AddEventButton: View {
+    @Binding var isPresentingAddEventView: Bool
+
+    var body: some View {
+        Button(action: {
+            isPresentingAddEventView = true
+        }) {
+            Text("+ 일정 추가하기")
+                .foregroundColor(.black)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .frame(width: 300)
+                .background(Color.yellow.opacity(0.6))
+                .border(Color.gray, width: 1.3)
+                .cornerRadius(3)
+                .padding(.horizontal, 10)
+        }
+        .padding(.top, 20)
+    }
 }
 
 // 캘린더 헤더

@@ -15,7 +15,7 @@ struct Submission: Identifiable {
     let deadline: Date
     let priority: Int
     let isSubmitted: Bool
-    let fileName: String
+    let fileName: [String]
     let fileSize: String
 }
 
@@ -62,7 +62,7 @@ struct MySubmissionView: View {
                           let deadlineTimestamp = data["deadline"] as? Timestamp,
                           let priority = data["priority"] as? Int,
                           let isSubmitted = data["isSubmitted"] as? Bool,
-                          let fileName = data["fileName"] as? String,
+                          let fileName = data["fileName"] as? [String],
                           let fileSize = data["fileSize"] as? String else {
                         return nil
                     }
@@ -95,7 +95,7 @@ struct MySubmissionView: View {
                             Text("제출 미완료")
                                 .font(.headline)
                                 .padding()
-                                .background(Color.white)
+                                //.background(Color.white)
                         )
                     ForEach(unfinishedSubmissions) { submission in
                         NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
@@ -116,7 +116,7 @@ struct MySubmissionView: View {
                             Text("제출 완료")
                                 .font(.headline)
                                 .padding()
-                                .background(Color.white)
+                                //.background(Color.white)
                         )
                     ForEach(finishedSubmissions) { submission in
                         NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
