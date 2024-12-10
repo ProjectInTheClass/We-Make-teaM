@@ -1,16 +1,11 @@
-//프로젝트 멤버들 전체 참여도 보기
 import SwiftUI
+import FirebaseFirestore
 
 struct ParticipationRankingView: View {
     var projectName: String
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var currentDate = Date()
-    @State private var participants = [
-        Participant(name: "김현경", score: 80),
-        Participant(name: "신준용", score: 70),
-        Participant(name: "정광석", score: 55),
-        Participant(name: "이수민", score: 40)
-    ]
+    @State private var participants: [Participant] = []
     
     var body: some View {
         ScrollView {
@@ -94,6 +89,9 @@ struct ParticipationRankingView: View {
                 }
             })
         }
+        .onAppear {
+            fetchParticipantsScore(for: projectName)
+        }
     }
     
     // 현재 날짜 형식 설정
@@ -107,6 +105,72 @@ struct ParticipationRankingView: View {
     private var sortedParticipants: [Participant] {
         participants.sorted { $0.score > $1.score }
     }
+    
+    // 프로젝트 참여자의 점수 데이터를 가져오는 함수
+    func fetchParticipantsScore(for projectName: String) {
+        let db = Firestore.firestore()
+        
+        // 프로젝트 이름으로 이벤트 가져오기
+        db.collection("events")
+            .whereField("projectName", isEqualTo: projectName)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching events: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("No events found.")
+                    return
+                }
+                
+                var participants: [Participant] = []
+                
+                // 각 이벤트에 대해 멤버를 가져오고 점수를 계산
+                for document in documents {
+                    let data = document.data()
+                    
+                    // 해당 이벤트의 참여자 리스트 가져오기
+                    if let participantsList = data["participants"] as? [String] {
+                        // 참여자 리스트에서 각 멤버의 점수를 가져옴
+                        print(participantsList)
+                        for participantId in participantsList {
+                            // 해당 멤버의 점수를 Firestore에서 가져옴
+                            db.collection("users").document(participantId).getDocument { userSnapshot, error in
+                                if let error = error {
+                                    print("Error fetching user data: \(error.localizedDescription)")
+                                } else if let userData = userSnapshot?.data() {
+                                    if let nickname = userData["nickname"] as? String {
+                                        // 멤버의 점수 가져오기
+                                        db.collection("Submission")
+                                            .whereField("eventId", isEqualTo: document.documentID)
+                                            .whereField("memberId", isEqualTo: participantId)
+                                            .getDocuments { submissionSnapshot, error in
+                                                if let error = error {
+                                                    print("Error fetching submission data: \(error.localizedDescription)")
+                                                } else if let submissionDocuments = submissionSnapshot?.documents, let submissionDoc = submissionDocuments.first {
+                                                    // 점수 계산, 예시로 100점에서 제출 상태에 따라 점수 차감
+                                                    let score = submissionDoc["isSubmitted"] as? Bool ?? false ? 100 : 0
+                                                    
+                                                    // 점수와 이름을 Participant 배열에 추가
+                                                    let participant = Participant(name: nickname, score: score)
+                                                    participants.append(participant)
+                                                }
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 참여자 데이터 업데이트 (UI 갱신을 위해 메인 쓰레드에서 실행)
+                DispatchQueue.main.async {
+                    self.participants = participants
+                }
+                print(participants)
+            }
+    }
 }
 
 struct Participant {
@@ -117,4 +181,3 @@ struct Participant {
 #Preview {
     ParticipationRankingView(projectName: "소프트웨어 스튜디오 2")
 }
-

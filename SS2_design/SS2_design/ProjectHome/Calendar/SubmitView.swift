@@ -1,14 +1,12 @@
 import SwiftUI
 import FirebaseFirestore
 
-
-
-
 struct SubmitView: View {
     var event: Event // Specific event details
     var selectedDate: Date
     @State private var members: [Member] = []
     @State private var eventid : String = ""
+    
     // Firebase에서 멤버를 가져오는 함수
     func fetchMembersForEvent() {
         let db = Firestore.firestore()
@@ -35,6 +33,8 @@ struct SubmitView: View {
                 for document in documents {
                     let data = document.data()
                     eventid = document.documentID
+                    let importance = data["importance"] as? Int ?? 0  // 이벤트의 중요도 가져오기
+
                     // 참가자 리스트를 가져와서 멤버를 처리
                     if let participants = data["participants"] as? [String] {
                         for memberId in participants {
@@ -59,7 +59,27 @@ struct SubmitView: View {
                                                     let isSubmitted = submissionDoc["isSubmitted"] as? Bool ?? false
                                                     
                                                     // 멤버 객체 생성
-                                                    let member = Member(name: nickname, hasSubmitted: isSubmitted)
+                                                    var member = Member(name: nickname, hasSubmitted: isSubmitted, submissionId: submissionDoc.documentID)
+                                                    print(submissionDoc.documentID)
+                                                    
+                                                    // isSubmitted가 true일 경우, score에 Importance 추가
+                                                    if isSubmitted {
+                                                        if var userScore = userData["score"] as? Int {
+                                                            userScore += importance * 5  // 중요도를 score에 더하기
+                                                            // Firestore에서 사용자 점수 업데이트
+                                                            db.collection("users").document(memberId).updateData([
+                                                                "score": userScore
+                                                            ]) { error in
+                                                                if let error = error {
+                                                                    print("Error updating user score: \(error.localizedDescription)")
+                                                                } else {
+                                                                    print("User score updated successfully")
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // 멤버를 배열에 추가
                                                     fetchedMembers.append(member)
                                                 }
                                                 dispatchGroup.leave()  // DispatchGroup에서 엔트리 제거
@@ -123,7 +143,7 @@ struct SubmitView: View {
                 if let myIndex = members.firstIndex(where: { $0.name == "정광석" }) {
                     members[myIndex].hasSubmitted = true
                 }
-            }, event : eventid)) {
+            }, event: eventid)) {
                 Text("과제 제출하러 가기")
                     .foregroundColor(.black)
                     .padding()
@@ -140,19 +160,16 @@ struct SubmitView: View {
         .onAppear {
             fetchMembersForEvent() // View가 나타날 때 멤버 데이터를 불러옴
         }
-
     }
-
 }
 
 struct Member: Identifiable {
     let id = UUID()
     let name: String
     var hasSubmitted: Bool
+    var submissionId: String  // 제출 상태에 해당하는 Document ID
 }
 
 #Preview {
-    SubmitView(event: Event(projectName : "asdf",title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date()
-)
+    SubmitView(event: Event(projectName: "asdf", title: "디자인 중간 발표", date: Date(), location: "잇빗 507호", color: .red, participants: ["A", "B"]), selectedDate: Date())
 }
-

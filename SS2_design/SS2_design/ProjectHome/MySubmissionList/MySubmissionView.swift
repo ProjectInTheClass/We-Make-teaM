@@ -17,6 +17,7 @@ struct Submission: Identifiable {
     let isSubmitted: Bool
     let fileName: [String]
     let fileSize: String
+    let url : [String]
 }
 
 struct MySubmissionView: View {
@@ -63,12 +64,13 @@ struct MySubmissionView: View {
                           let priority = data["priority"] as? Int,
                           let isSubmitted = data["isSubmitted"] as? Bool,
                           let fileName = data["fileName"] as? [String],
+                          let url = data["URL"] as? [String],
                           let fileSize = data["fileSize"] as? String else {
                         return nil
                     }
 
                     let deadline = deadlineTimestamp.dateValue()
-                    return Submission(title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize)
+                    return Submission(title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize, url : url)
                 } ?? []
                 self.isLoading = false
             }
@@ -169,8 +171,10 @@ struct SubmissionDetailView: View {
                 .font(.subheadline)
             
             Text("파일 이름: \(submission.fileName)")
+            Text("URL: \(submission.url)")
             Text("파일 크기: \(submission.fileSize)")
             Text("중요도: \(submission.priority)")
+            
             
             Spacer()
             

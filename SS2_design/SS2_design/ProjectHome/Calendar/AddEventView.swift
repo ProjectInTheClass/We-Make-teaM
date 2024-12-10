@@ -231,6 +231,7 @@ struct AddEventView: View {
             "color": selectedColor.description,
             "location": location,
             "participants": selectedMembers,
+            "reminder" : reminder,
             "importance": importance,
             "createdAt": FieldValue.serverTimestamp() // 서버 시간 추가
         ]
