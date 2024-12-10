@@ -242,7 +242,7 @@ struct AddProjectModalView: View {
             }
             
             HStack(){
-
+                
                 Text("비밀번호")
                     .padding(.leading,10)
                 SecureField("비밀번호 입력", text: $enteredPassword)
@@ -282,51 +282,47 @@ struct AddProjectModalView: View {
     func addProjectToList(id: String, password: String) {
         let db = Firestore.firestore()
         
-        // Firestore에서 프로젝트 검색
-        db.collection("Project")
-            .whereField("teamPWD", isEqualTo: password) // 비밀번호 일치 확인
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    print("Error fetching project: \(error)")
-                    return
-                }
-                
-                if let snapshot = snapshot, !snapshot.isEmpty {
-                    // 프로젝트가 존재하면
-                    for document in snapshot.documents {
-                        let projectID = document.documentID // 자동 생성된 documentID
-                        var memberIds = document.data()["memberIds"] as? [String] ?? []
+        // Firestore에서 프로젝트 검색 (documentID가 id와 일치하는 프로젝트 찾기)
+        db.collection("Project").document(id).getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching project: \(error)")
+                return
+            }
+            
+            // 프로젝트가 존재하면
+            if let document = snapshot, document.exists {
+                // teamPWD와 일치하는지 확인
+                if let teamPWD = document.data()?["teamPWD"] as? String, teamPWD == password {
+                    var memberIds = document.data()?["memberIds"] as? [String] ?? []
+                    
+                    // 사용자의 uid 추가 (중복 확인)
+                    if !memberIds.contains(Auth.auth().currentUser?.uid ?? "") {
+                        memberIds.append(Auth.auth().currentUser?.uid ?? "")
                         
-                        // 사용자의 uid 추가 (중복 확인)
-                        if !memberIds.contains(Auth.auth().currentUser?.uid ?? "") {
-                            memberIds.append(Auth.auth().currentUser?.uid ?? "")
-                            
-                            // memberIds 업데이트
-                            db.collection("Project").document(projectID).updateData([
-                                "memberIds": memberIds
-                            ]) { error in
-                                if let error = error {
-                                    print("Error updating memberIds: \(error)")
-                                } else {
-                                    print("UID added to project successfully")
-                                    self.projects.append(document.data()["teamName"] as! String) // 프로젝트 리스트에 추가
-                                    self.showModal = false // 모달 창 닫기
-                                }
+                        // memberIds 업데이트
+                        db.collection("Project").document(id).updateData([
+                            "memberIds": memberIds
+                        ]) { error in
+                            if let error = error {
+                                print("Error updating memberIds: \(error)")
+                            } else {
+                                print("UID added to project successfully")
+                                self.projects.append(document.data()?["teamName"] as! String) // 프로젝트 리스트에 추가
+                                self.showModal = false // 모달 창 닫기
                             }
-                        } else {
-                            print("You are already a member of this project.")
                         }
+                    } else {
+                        print("You are already a member of this project.")
                     }
                 } else {
-                    print("프로젝트가 존재하지 않거나 비밀번호가 잘못되었습니다.")
+                    print("비밀번호가 일치하지 않습니다.")
                 }
+            } else {
+                print("프로젝트가 존재하지 않습니다.")
             }
+        }
     }
-
-
 }
-
-
 struct ArcShape: Shape{
     func path(in rect: CGRect) -> Path{
         var path = Path()
