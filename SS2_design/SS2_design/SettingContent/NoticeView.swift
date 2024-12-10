@@ -9,25 +9,56 @@ struct NoticesView: View {
 
     var body: some View {
         NavigationView {
-            List(notices) { notice in
-                NavigationLink(destination: NoticeDetailView(notice: notice)) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(notice.title)
-                            .font(.headline)
-                        Text(notice.date)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+            ScrollView {
+                VStack(spacing: 20) {
+                    ForEach(notices) { notice in
+                        NavigationLink(destination: NoticeDetailView(notice: notice)) {
+                            NoticeCardView(notice: notice)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .padding(.vertical, 5)
                 }
+                .padding()
             }
+            .background(Color(UIColor.systemGroupedBackground))
             .navigationTitle("공지사항")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-// 공지사항 데이터 모델
+struct NoticeCardView: View {
+    let notice: Notice
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "megaphone.fill")
+                    .foregroundColor(.yellow)
+                    .font(.title)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(notice.title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .padding(.top, 5)
+                    Text(notice.date)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                Spacer()
+            }
+            Text(notice.content)
+                .font(.body)
+                .lineLimit(2)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+}
+
 struct Notice: Identifiable {
     let id = UUID()
     let title: String
@@ -35,31 +66,35 @@ struct Notice: Identifiable {
     let date: String
 }
 
+
 // 공지사항 세부 내용 뷰
 struct NoticeDetailView: View {
     let notice: Notice
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading, spacing: 20) {
                 Text(notice.title)
                     .font(.title)
                     .fontWeight(.bold)
-                    .padding(.bottom, 5)
-
+                    .foregroundColor(.yellow)
+                    .frame(maxWidth: .infinity)
+                
                 Text(notice.date)
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                    .padding(.bottom, 15)
-
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                
                 Text(notice.content)
                     .font(.body)
-                    .multilineTextAlignment(.leading)
-
+                    .foregroundColor(.primary)
+                    .lineSpacing(5)
+                
                 Spacer()
             }
             .padding()
         }
+        .background(Color(UIColor.systemGroupedBackground))
         .navigationTitle("공지사항")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -68,4 +103,3 @@ struct NoticeDetailView: View {
 #Preview {
     NoticesView()
 }
-

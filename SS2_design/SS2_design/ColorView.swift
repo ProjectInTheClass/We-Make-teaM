@@ -2,6 +2,7 @@ import SwiftUI
 
 extension Color {
     static let customYellow = Color(hex:"#FFFF00")// Color(red: 1.0, green: 0.9, blue: 0.0)
+    static let customYellow2 = Color(hex:"#FFD700")
     static let customBlue = Color(hex: "#1E90FF") // HEX 값 사용
 }
 
@@ -9,7 +10,7 @@ extension Color {
 extension Color {
     init(hex: String) {
         let scanner = Scanner(string: hex)
-        scanner.scanLocation = hex.hasPrefix("#") ? 1 : 0
+        //scanner.scanLocation = hex.hasPrefix("#") ? 1 : 0
         var rgbValue: UInt64 = 0
         scanner.scanHexInt64(&rgbValue)
         let red = Double((rgbValue >> 16) & 0xff) / 255.0

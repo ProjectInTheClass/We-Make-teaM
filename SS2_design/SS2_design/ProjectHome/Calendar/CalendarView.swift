@@ -1,4 +1,4 @@
-//캘린더 화면
+// 캘린더 화면
 import SwiftUI
 
 struct CalendarView: View {
@@ -20,7 +20,6 @@ struct CalendarView: View {
     var body: some View {
         VStack {
             CalendarHeader(selectedDate: $selectedDate)
-            //Divider()
             CalendarGrid(selectedDate: $selectedDate, events: allEvents) { date in
                 loadEvents(for: date)
             }
@@ -28,7 +27,6 @@ struct CalendarView: View {
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.gray.opacity(0.5), lineWidth: 1)
             )
-            
             
             // 일정 리스트
             ScrollView {
@@ -38,14 +36,13 @@ struct CalendarView: View {
                             .font(.headline)
                             .padding(.leading, 10)
                             .frame(maxWidth: .infinity)
-                  
                         
                         ForEach(eventsForSelectedDate) { event in
                             NavigationLink(destination: SubmitView(event: event, selectedDate: selectedDate)) {
                                 HStack {
                                     Circle()
                                         .fill(event.color)
-                                        .frame(width: 10, height: 10)
+                                        .frame(width: 13, height: 13)
                                     Text(event.title)
                                         .font(.subheadline)
                                         .foregroundColor(.primary)
@@ -135,7 +132,6 @@ struct CalendarView: View {
     func loadEvents(for date: Date) {
         eventsForSelectedDate = allEvents.filter { Calendar.current.isDate($0.date, inSameDayAs: date)}
     }
-    
 }
 
 // 캘린더 헤더
@@ -159,7 +155,6 @@ struct CalendarHeader: View {
             Text(formattedYearMonth)
                 .font(.title2)
                 .padding(5)
-                //.border(Color.yellow.opacity(0.5), width: 2)
             Spacer()
             Button(action: {
                 selectedDate = calendar.date(byAdding: .month, value: +1, to: selectedDate)!
@@ -182,8 +177,6 @@ struct CalendarHeader: View {
         return formatter.string(from: selectedDate)
     }
 }
-
-
 
 // 캘린더 그리드
 struct CalendarGrid: View {
@@ -241,17 +234,46 @@ struct CalendarGrid: View {
                             let day = generateDaysInMonth(for: selectedDate)[row * 7 + column]
                             ZStack {
                                 // 이벤트 표시
-                                VStack(spacing: 5) {
+                                VStack(spacing: 3) { // 간격을 좁히기 위해 spacing 값 조정
                                     Spacer()
-                                    HStack {
-                                        ForEach(eventsForDate(day).prefix(3), id: \.self) { eventColor in
-                                            Circle()
-                                                .offset(x: 5, y: -10)
-                                                .fill(eventColor)
-                                                .frame(width: 6, height: 6)
+
+                                    // 최대 6개의 이벤트만 표시
+                                    let eventColors = eventsForDate(day).prefix(6)
+
+                                    if eventColors.count > 3 {
+                                        // 3개까지는 가로로, 그 이상은 세로로 배치
+                                        VStack {
+                                            // 첫 번째 줄
+                                            HStack(spacing: 3.5) {
+                                                ForEach(eventColors.prefix(3), id: \.self) { eventColor in
+                                                    Circle()
+                                                        .fill(eventColor)
+                                                        .frame(width: 7, height: 7)
+                                                        .offset(x:0,y:7)
+                                                }
+                                            }
+                                            // 두 번째 줄
+                                            HStack(spacing: 3.5) {
+                                                ForEach(eventColors.dropFirst(3), id: \.self) { eventColor in
+                                                    Circle()
+                                                        .fill(eventColor)
+                                                        .frame(width: 7, height: 7)
+                                                        .offset(x:0,y:7)
+                                                }
+                                            }
                                         }
-                                        Spacer()
+                                    } else {
+                                        // 3개 이하일 경우 가로로 표시
+                                        HStack(spacing: 3.5) {
+                                            ForEach(eventColors, id: \.self) { eventColor in
+                                                Circle()
+                                                    .fill(eventColor)
+                                                    .frame(width: 7, height: 7)
+                                                    .offset(x:-3,y:2)
+                                            }
+                                        }
                                     }
+                                    Spacer()
                                 }
 
                                 // 날짜 버튼
@@ -260,14 +282,14 @@ struct CalendarGrid: View {
                                     onDateSelected(day)
                                 }) {
                                     Text("\(Calendar.current.component(.day, from: day))")
-                                        .font(.system(size: 12))
+                                        .font(.system(size: 10))
                                         .foregroundColor(Calendar.current.isDate(selectedDate, inSameDayAs: day) ? .white : .primary)
                                         .padding(5)
                                         .background(Calendar.current.isDate(selectedDate, inSameDayAs: day) ? Color.yellow : Color.clear)
                                         .clipShape(Circle())
                                 }
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                                .offset(x: 3, y: 0) // 왼쪽 위로 이동
+                                .offset(x: 2, y: 0) // 왼쪽 위로 이동
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
@@ -285,6 +307,7 @@ struct CalendarGrid: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                    .offset(y: 5) // top 위치를 조금 더 아래로 조정
             )
         }
         .padding([.leading, .trailing], 1) // 양쪽 여백 조정
@@ -304,11 +327,6 @@ struct CalendarGrid: View {
         }
     }
 }
-
-
-
-
-
 
 
 #Preview {

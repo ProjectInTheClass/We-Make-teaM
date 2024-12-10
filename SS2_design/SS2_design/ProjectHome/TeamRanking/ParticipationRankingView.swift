@@ -13,87 +13,107 @@ struct ParticipationRankingView: View {
     ]
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                VStack(spacing: 0) {
-                    ZStack {
-                        Text("Team Ranking")
-                            .font(.system(size: 40, weight: .bold, design: .rounded))
-                            .frame(maxWidth: .infinity)
-                    }
-                    .padding(.top, 10)
-                    
-                    HStack {
-                        Text("\(formattedDate)")
-                            .foregroundColor(.red)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                        
-                        Text(" 까지의 참여도 순위")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .offset(x: -7)
-                    }
-                }
-                
+        ZStack(){
+            Color.yellow
+                .opacity(0.1)
+                .ignoresSafeArea()
+            ScrollView {
                 VStack(spacing: 20) {
-                    ForEach(Array(sortedParticipants.enumerated()), id: \.offset) { index, participant in
-                        HStack {
-                            Text(" \(index + 1) ")
-                                .fontWeight(.bold)
-                                .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
-                            Image("profile")
-                                .resizable()
-                                .frame(width: index == 0 ? 80 : 70, height: index == 0 ? 70 : 60) // 1등은 더 큰 이미지
-                                .foregroundColor(.black)
-                                .background(Color.white)
-                            Spacer()
-                            Text("\(participant.name): ")
-                                .fontWeight(.bold)
-                                .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
-                            Spacer()
-                            Spacer()
-                            Text("\(participant.score)점")
-                                .fontWeight(.semibold)
-                                .foregroundColor(.black)
-                                .font(index == 0 ? .title2 : .headline) // 1등은 더 큰 점수 글씨
-                            Spacer()
-                            Spacer()
+                    VStack(spacing: 5) {
+                        VStack(spacing: 1){
+                            Capsule()
+                                .fill(Color.black)
+                                .frame(height: 3)
+                                .padding(.horizontal,30)
+                            
+                            Text("Team Ranking")
+                                .font(.system(size: 40, weight: .bold, design: .rounded))
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                            
+                            Capsule()
+                                .fill(Color.black)
+                                .frame(height: 3)
+                                .padding(.horizontal,30)
                         }
-                        .padding(index == 0 ? 15 : 10) // 1등은 더 넓은 여백
-                        .frame(width: index == 0 ? 340 : 320, height: index == 0 ? 80 : 70) // 1등은 더 큰 프레임
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white)
-                                .shadow(color: Color.black.opacity(0.15), radius: 6, x: 4, y: 4)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(index == 0 ? Color.yellow.opacity(0.5) : Color.gray.opacity(0.5), lineWidth: index == 0 ? 3 : 1) // 1등은 노란색 테두리
-                        )
+                        .padding(.top, 10)
+                        
+                        HStack {
+                            Text("\(formattedDate)")
+                                .foregroundColor(.red)
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                            
+                            Text(" 까지의 참여도 순위")
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .offset(x: -7)
+                        }
+                        //.offset(x: 65)
+            
                     }
-                }
-                .padding(.top, 20)
+                    
+                    VStack(spacing: 20) {
+                        ForEach(Array(sortedParticipants.enumerated()), id: \.offset) { index, participant in
+                            HStack {
+                                Text(" \(index + 1) ")
+                                    .fontWeight(.bold)
+                                    .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
+                                Image("profile")
+                                    .resizable()
+                                    .frame(width: index == 0 ? 90 : 70, height: index == 0 ? 80 : 60) // 1등은 더 큰 이미지
+                                    .foregroundColor(.black)
+                                    .background(Color.white)
+                                Spacer()
+                                Text("\(participant.name): ")
+                                    .fontWeight(.bold)
+                                    .font(index == 0 ? .title : .title2) // 1등은 더 큰 글씨
+                                Spacer()
+                                Spacer()
+                                Text("\(participant.score)점")
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.black)
+                                    .font(index == 0 ? .title2 : .headline) // 1등은 더 큰 점수 글씨
+                                Spacer()
+                                Spacer()
+                            }
+                            .padding(index == 0 ? 15 : 10) // 1등은 더 넓은 여백
+                            .frame(width: index == 0 ? 350 : 320, height: index == 0 ? 90 : 70) // 1등은 더 큰 프레임
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.15), radius: 6, x: 4, y: 4)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(index == 0 ? Color.yellow.opacity(0.5) : Color.gray.opacity(0.5), lineWidth: index == 0 ? 3 : 1) // 1등은 노란색 테두리
+                            )
+                        }
+                    }
+                    .padding(.top, 20)
 
+                }
+                .padding()
+                .navigationTitle("참여도 순위")
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(trailing: HStack {
+                    Button(action: {
+                        navigationManager.resetToRoot()
+                    }) {
+                        Text("WMM")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                    }
+                    
+                    NavigationLink(destination: SettingView()) {
+                        Image(systemName: "gearshape.fill")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(.black)
+                    }
+                })
             }
-            .padding()
-            .navigationTitle("참여도 순위")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: HStack {
-                Button(action: {
-                    navigationManager.resetToRoot()
-                }) {
-                    Text("WMM")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                }
-                
-                NavigationLink(destination: SettingView()) {
-                    Image(systemName: "gearshape.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.black)
-                }
-            })
         }
+        
+        
     }
     
     // 현재 날짜 형식 설정

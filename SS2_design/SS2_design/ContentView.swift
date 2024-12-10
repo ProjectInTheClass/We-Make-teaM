@@ -111,7 +111,7 @@ struct ContentView: View {
                         .frame(height: 100)
                     }
                     
-                    ScrollView{
+                    ScrollView {
                         ForEach(projects, id:\.self){project in
                             NavigationLink(destination: ProjectHomeView(projectName: project)){
                                 VStack(alignment: .center ){
@@ -195,62 +195,104 @@ struct AddProjectModalView: View {
     @Binding var enteredPassword: String
     @Binding var projects: [String]
     @Binding var showModal: Bool
+    @State private var showAlert: Bool = false
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 40) {
             Text("프로젝트 추가")
                 .font(.title)
                 .fontWeight(.bold)
                 .padding()
-            HStack(){
-                Text("프로젝트 ID")
-                    .padding(.leading,10)
-                TextField("프로젝트 ID 입력", text: $enteredProjectID)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-            }
+                .frame(maxWidth:.infinity)
+            Spacer()
             
-            HStack(){
-
-                Text("비밀번호")
-                    .padding(.leading,10)
-                SecureField("비밀번호 입력", text: $enteredPassword)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-            }
-            
-            
-            
-            Button(action: {
-                // 입력된 ID와 비밀번호가 조건을 만족하면 프로젝트 추가
-                if validateProject(id: enteredProjectID, password: enteredPassword) {
-                    projects.append(enteredProjectID) // 프로젝트 추가
-                    showModal = false // 모달 창 닫기
-                } else {
-                    // 입력값이 유효하지 않을 경우 처리
-                    print("Invalid project ID or password")
+            VStack(alignment: .leading, spacing: 30){
+                VStack{
+                    Text("프로젝트 ID")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        //.padding(.leading,10)
+                    TextField("프로젝트 ID 입력", text: $enteredProjectID)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(15)
+                        .frame(height: 45)
+                        .background(Color.white)
+                        .foregroundColor(Color.black)
+                        .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.gray, lineWidth: 3)
+                        )
+                        .frame(height: 40)
                 }
-            }) {
-                Text("추가")
-                    .foregroundColor(.black)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.yellow.opacity(0.4))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                VStack{
+                    Text("비밀번호")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        //.padding(.leading,10)
+                    SecureField("비밀번호 입력", text: $enteredPassword)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(15)
+                        .frame(height: 45)
+                        .background(Color.white)
+                        .foregroundColor(Color.black)
+                        .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.gray, lineWidth: 3)
+                        )
+                        .frame(height: 40)
+                }
+            }
+            .padding(.horizontal,20)
+        
+            Spacer()
+            
+            VStack(spacing: 10){
+                Button(action: {
+                    // 입력된 ID와 비밀번호가 조건을 만족하면 프로젝트 추가
+                    if validateProject(id: enteredProjectID, password: enteredPassword) {
+                        projects.append(enteredProjectID) // 프로젝트 추가
+                        showModal = false // 모달 창 닫기
+                    } else {
+                        // 입력값이 유효하지 않을 경우 처리
+                        showAlert = true
+                        print("Invalid project ID or password")
+                    }
+                }) {
+                    Text("추가")
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.yellow.opacity(0.7))
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                
+                Button(action: {
+                    showModal = false // 모달 창 닫기
+                }) {
+                    Text("취소")
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(1))
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                
             }
             
-            Button(action: {
-                showModal = false // 모달 창 닫기
-            }) {
-                Text("취소")
-                    .foregroundColor(.black)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.3))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-            }
+            
+            Spacer()
+            Spacer()
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("오류"),
+                message: Text("프로젝트 ID 또는 비밀번호가 일치하지 않습니다."),
+                dismissButton: .default(Text("확인"))
+            )
         }
     }
     

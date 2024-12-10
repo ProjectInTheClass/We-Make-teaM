@@ -44,7 +44,7 @@ struct LoginView: View {
                     }) {
                         Image(systemName: showPassword ? "eye.slash" : "eye")
                             .foregroundColor(.gray)
-                            .padding(.trailing, 15)
+                            .padding(.trailing, 20)
                     }
                 }
             }

@@ -19,99 +19,70 @@ struct CreateProjectView: View{
     
     var body: some View{
         NavigationView{
-            ZStack(){
-                VStack(spacing: 0) {
-                    Color.yellow
-                        .opacity(0.3)
-                        .frame(height: 180) // 상단 배경 크기 조정
-                        .ignoresSafeArea(edges: .top)
-                        //.overlay(
-                        //    Rectangle()
-                        //        .frame(height: 2)
-                        //        .foregroundColor(Color.brown.opacity(0.5)) // 선 색상
-                        //                .padding(.top, 0), // 하단 선 위치 조정
-                        //            alignment: .bottom
-                        //        )
-                        //.offset(y: -6)
-    
-                    Spacer() // 나머지는 흰색으로 덮음
-                }
-                
-                VStack(alignment: .leading, spacing: 20){
-                    
-            
-                    ZStack {
-                    
-                        Text("팀프로젝트 생성")
-                            .font(.system(size: 40, weight: .regular, design: .rounded))
-                            //.foregroundColor(.white)
-                            .bold()
-                            .offset(y:-10)
+            ZStack {
+                Color.yellow
+                    .opacity(0.3)
+                    .ignoresSafeArea()
 
-        
-    
-                        Image("plane3")
-                            .resizable()
-                            .frame(width: 180, height: 180)
-                            .offset(x: 100, y: 60)
-    
-            
-                    }
-                    .padding(.top, 20)
-                    .padding(.bottom, 0)
-                    .frame(maxWidth: .infinity) // 가로로 꽉 차게 설정
-            
-
+                VStack {
+                    Text("팀프로젝트 생성")
+                        .font(.system(size: 30, weight: .regular, design: .rounded))
+                        .bold()
+                        .offset(y: 0)
+                        .padding(.bottom, 20)
                     
-                    VStack(alignment: .leading, spacing: 20){
-                        VStack(alignment: .leading){
+                    Spacer()
+                    Spacer()
+
+                    VStack(alignment: .leading, spacing: 40) {
+                        VStack(alignment: .leading, spacing: 7) {
                             Text("팀명")
-                                .font(.title3)
-                                .fontWeight(.black)
-                                //.foregroundColor(.yellow)
-                            TextField("",text: $teamName)
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .padding(.bottom, 5)
-                                .overlay(
-                                    Rectangle()
-                                        .frame(height: 2) // 하단 선의 높이
-                                        .foregroundColor(Color.black.opacity(0.6)) // 선 색상
-                                                .padding(.top, 20), // 하단 선 위치 조정
-                                            alignment: .bottom // 하단에만 선 배치
-                                        )
-                                        .frame(width: 250)
-                        }
-                        
-                        VStack(alignment: .leading){
-                            Text("비밀번호")
-                                .font(.title3)
-                                .fontWeight(.black)
-                                //.foregroundColor(.yellow)
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .foregroundColor(.black)
                             
+                            TextField("", text: $teamName)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(15)
+                                .frame(height: 45)
+                                .background(Color.white)
+                                .foregroundColor(Color.black)
+                                .cornerRadius(15)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(Color.gray, lineWidth: 3)
+                                )
+                                .frame(height: 40)
+                        }
+                        .padding(.horizontal, 20)
+
+                        VStack(alignment: .leading, spacing: 5){
+                            Text("비밀번호")
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .fontWeight(.black)
                             TextField("",text: $teamPWD)
                                 .textFieldStyle(PlainTextFieldStyle())
-                                .padding(.bottom, 5)
+                                .padding(15)
+                                .frame(height: 45)
+                                .background(Color.white)
+                                .foregroundColor(Color.black)
+                                .cornerRadius(15)
                                 .overlay(
-                                    Rectangle()
-                                        .frame(height: 2) // 하단 선의 높이
-                                        .foregroundColor(Color.black.opacity(0.6)) // 선 색상
-                                                .padding(.top, 20), // 하단 선 위치 조정
-                                            alignment: .bottom // 하단에만 선 배치
-                                        )
-                                        .frame(width: 250)
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(Color.gray, lineWidth: 3)
+                                )
+                                .frame(height: 50)
                         }
-                        
-                        VStack(alignment: .leading){
+                        .padding(.horizontal, 20)  
+
+                        VStack(alignment: .leading, spacing: 5){
                             Text("참여 인원수")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                //.foregroundColor(.yellow)
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                
                             Picker("", selection: $selectedMemberCount){
                                 ForEach(memberCounts, id: \.self){ count in
                                     Text("\(count)").tag(count)
                                 }
                             }
-        
                             .pickerStyle(MenuPickerStyle())
                             .accentColor(.black)
                             .frame(maxWidth: 50)
@@ -119,12 +90,12 @@ struct CreateProjectView: View{
                             .border(Color.black, width: 2)
                             .cornerRadius(3)
                         }
-                        
-                        VStack(alignment: .leading){
+                        .padding(.horizontal, 20)
+                                           
+                        VStack(alignment: .leading, spacing: 5){
                             Text("진행 학기")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                //.foregroundColor(.yellow)
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+        
                             HStack{
                                 Picker("년도", selection: $selectedYear){
                                     ForEach(years, id: \.self){ year in
@@ -133,11 +104,11 @@ struct CreateProjectView: View{
                                 }
                                 .pickerStyle(MenuPickerStyle())
                                 .accentColor(.black)
-                                .frame(maxWidth: 90)
+                                .frame(maxWidth: 95)
                                 .background(Color.white)
                                 .border(Color.black, width: 2)
                                 .cornerRadius(3)
-                                
+                    
                                 Picker("학기", selection: $selectedSemester){
                                     ForEach(semesters, id:\.self){ semester in
                                         Text("\(semester)").tag(semester)
@@ -150,18 +121,11 @@ struct CreateProjectView: View{
                                 .border(Color.black, width: 2)
                                 .cornerRadius(3)
                             }
-                            
                         }
-                        
-                    }
-                    .padding(.leading, 10)
-                    
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    
-                    VStack(alignment:.center){
+                        .padding(.horizontal, 20)
         
+                        Spacer()
+                        
                         Button(action:{
                             isPresentingCompletionView=true
                         }) {
@@ -171,46 +135,40 @@ struct CreateProjectView: View{
                                 .fontDesign(.monospaced)
                                 .foregroundColor(.white)
                                 .padding()
-                                .frame(width:250, height:50)
+                                .frame(width: 300, height: 60)
                                 .background(Color.black)
-                                .cornerRadius(8)
+                                .cornerRadius(30)
+                                .frame(maxWidth: .infinity)
                         }
-                        .padding(.top,0)
+                        .padding(.top, 0)
+                        
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    Spacer()
-                    
                 }
                 .padding()
-                .navigationTitle("")
-                .toolbar{
-                    ToolbarItem(placement: .navigationBarLeading){
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "xmark")
-                                .fontWeight(.black)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                .sheet(isPresented: $isPresentingCompletionView){
-                    CompletionView(teamName: teamName, teamPWD: teamPWD, teamID: teamID, projects: $projects){
-                        dismiss()
-                    }
-                }
-                Spacer()
             }
+
+            .navigationTitle("")
+            .toolbar{
+                ToolbarItem(placement: .navigationBarLeading){
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .fontWeight(.black)
+                            .foregroundColor(.black)
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresentingCompletionView){
+                CompletionView(teamName: teamName, teamPWD: teamPWD, teamID: teamID, projects: $projects){
+                    dismiss()
+                }
+            }
+            Spacer()
         }
     }
 }
-
 
 #Preview {
     CreateProjectView(projects: .constant(["소프트웨어 스튜디오 2"]))

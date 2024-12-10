@@ -1,4 +1,3 @@
-//생성된 방 링크
 import SwiftUI
 
 struct CompletionView: View {
@@ -12,36 +11,35 @@ struct CompletionView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                VStack(spacing: 0) {
-                    // 상단 배경
-                    Color.yellow
-                        .opacity(0.3)
-                        .frame(height: geometry.size.height * 0.22) // 비율 기반 상단 배경
-                        .ignoresSafeArea(edges: .top)
-                    
-                    Spacer() // 나머지 화면은 흰색
-                }
+                Color.yellow
+                    .opacity(0.3)
+                    .ignoresSafeArea()
                 
-                VStack(alignment: .center, spacing: 50) {
+                VStack(alignment: .center, spacing: 2) {
+                    Image("colored_plane")
+                        .resizable()
+                        .frame(width: 340, height: 260)
                     // 상단 섹션
-                    VStack(spacing: 8) {
+                    VStack(spacing: 5) {
                         Text(teamName)
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .font(.system(size: 38, weight: .bold, design: .rounded))
                             .foregroundColor(.black)
+                            //.shadow(color: .yellow.opacity(0.4), radius: 2, x: 0, y: 3) // 음영 효과 추가
                         
                         Text("팀이 생성되었습니다.")
                             .fontDesign(.rounded)
                             .fontWeight(.semibold)
                             .foregroundColor(.black)
                     }
+                    .offset(y: -35)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 0)
-                    .offset(y: 20)
-
+                    .padding(.bottom, 30)
+        
                     // 내용 섹션
-                    VStack(spacing: 40) {
-                        VStack(spacing: 40) {
-                            InfoSection(title: "프로젝트방 ID", ID: teamID, PWD: teamPWD)
+                
+                    VStack(spacing: 70) {
+                        VStack(spacing: 30) {
+                            InfoSection(title: "방 ID", ID: teamID, PWD: teamPWD)
                             InfoSection(title: "방 비밀번호", ID: teamPWD, PWD: teamPWD)
                         }
                         .frame(maxWidth: .infinity)
@@ -57,9 +55,9 @@ struct CompletionView: View {
                                 .fontDesign(.monospaced)
                                 .foregroundColor(.white)
                                 .padding()
-                                .frame(width:250, height:50)
+                                .frame(width: 300, height: 60)
                                 .background(Color.black)
-                                .cornerRadius(8)
+                                .cornerRadius(30)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -75,6 +73,7 @@ struct CompletionView: View {
     }
 }
 
+
 // InfoSection 재사용 가능한 뷰
 struct InfoSection: View {
     var title: String
@@ -84,15 +83,14 @@ struct InfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .regular, design: .rounded))
                 .foregroundColor(.black)
             
             HStack(spacing: 15) {
                 Text(ID)
                     .padding()
-                    .frame(height: 40)
-                    .frame(minWidth: 250)
-                    
+                    .frame(height: 20)
+                    .frame(minWidth: 170)
                     .cornerRadius(3)
                     .contextMenu {
                         Button(action: {
@@ -114,6 +112,8 @@ struct InfoSection: View {
                         .border(Color.black, width: 2)
                 }
             }
+            .background(Color.white)
+            .frame(height: 40)
             .border(Color.black, width: 2)
         }
         .padding(.leading, 0)
@@ -125,6 +125,6 @@ struct InfoSection: View {
         teamName: "소프트웨어 스튜디오 2",
         teamPWD: "0000",
         teamID: "abcdefg",
-        projects: .constant(["소프트웨어 스튜디오2"])
+        projects: .constant(["소프트웨어 스튜디오 2"])
     ) {}
 }

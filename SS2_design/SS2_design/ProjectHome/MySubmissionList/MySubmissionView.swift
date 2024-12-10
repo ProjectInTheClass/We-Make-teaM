@@ -61,116 +61,134 @@ struct MySubmissionView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        ZStack(){
+            //Color.yellow
+              //.opacity(0.15)
+              //.ignoresSafeArea()
+            VStack(spacing: 20) {
+                
+                VStack(spacing: 1){
+                    Capsule()
+                        .fill(Color.black)
+                        .frame(height: 3)
+                        .padding(.horizontal)
+                    
                     Text("My Submission View")
                         .font(.system(size: 38, weight: .bold, design: .rounded))
                         .frame(maxWidth: .infinity)
                         .padding()
                     
-                    ScrollView {
-                        // 미완료 과제
+                    Capsule()
+                        .fill(Color.black)
+                        .frame(height: 3)
+                        .padding(.horizontal)
+                }
+                .padding(.top, 5)
+                
+                ScrollView {
+                    // 미완료 과제
+                    Divider()
+                        .background(Color.gray.opacity(0.7))
+                        .padding(.vertical, 15)
+                        .padding(10)
+                        .overlay(
+                            Text("제출 미완료")
+                                .font(.headline)
+                                .padding(.horizontal,20)
+                                .padding(.vertical, 10)
+                                //.background(Color.white)
+                        )
+                        .frame(maxWidth: .infinity)
+                    ForEach(unfinishedSubmissions) { submission in
+                        NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text(submission.title)
+                                        .font(submission.priority == 1 ? .title3 : .headline)
+                                        .foregroundColor(.primary)
+                                
+                                    Spacer()
+                                    Text("중요도: \(submission.priority)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Text("마감일: \(submission.deadline, style: .date)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(getDeadlineColor(for: submission))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                        }
+                    }
+                    
+                    // 구분선
+                    if !unfinishedSubmissions.isEmpty && !finishedSubmissions.isEmpty {
                         Divider()
                             .background(Color.gray.opacity(0.7))
                             .padding(.vertical, 15)
                             .padding(10)
                             .overlay(
-                                Text("제출 미완료")
+                                Text("제출 완료")
                                     .font(.headline)
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 10)
-                                    .background(Color.white)
+                                    //.background(Color.white)
                             )
                             .frame(maxWidth: .infinity)
-                        ForEach(unfinishedSubmissions) { submission in
-                            NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
-                                VStack(alignment: .leading) {
-                                    
-                                    HStack {
-                                        Text(submission.title)
-                                            .font(submission.priority == 1 ? .title3 : .headline)
-                                            .foregroundColor(.primary)
-                                        
-                                        Spacer()
-                                        Text("중요도: \(submission.priority)")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    Text("마감일: \(submission.deadline, style: .date)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .background(getDeadlineColor(for: submission))
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                            }
-                        }
                         
-                        // 구분선
-                        if !unfinishedSubmissions.isEmpty && !finishedSubmissions.isEmpty {
-                            Divider()
-                                .background(Color.gray.opacity(0.7))
-                                .padding(.vertical, 15)
-                                .padding(10)
-                                .overlay(
-                                    Text("제출 완료")
-                                        .font(.headline)
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 10)
-                                        .background(Color.white)
-                                )
-                                .frame(maxWidth: .infinity)
+                    }
                             
-                        }
-                        
-                        // 완료 과제
-                        ForEach(finishedSubmissions) { submission in
-                            NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text(submission.title)
-                                            .font(.headline)
-                                            .foregroundColor(.primary)
-                                        
-                                        Spacer()
-                                        Text("중요도: \(submission.priority)")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    Text("마감일: \(submission.deadline, style: .date)")
+                    // 완료 과제
+                    ForEach(finishedSubmissions) { submission in
+                        NavigationLink(destination: SubmissionDetailView(submission: submission, teamMembers: teamMembers)) {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text(submission.title)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                            
+                                    Spacer()
+                                    Text("중요도: \(submission.priority)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
-                                .padding()
-                                .background(Color.yellow.opacity(0.4))
-                                .cornerRadius(10)
-                                .padding(.horizontal)
+                                        
+                                Text("마감일: \(submission.deadline, style: .date)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                             }
+                            .padding()
+                            .background(Color.yellow.opacity(0.7))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                         }
                     }
                 }
-                .navigationTitle("나의 제출")
-                .navigationBarTitleDisplayMode(.inline)
-                .navigationBarItems(trailing: HStack {
-                    Button(action: {
-                        navigationManager.resetToRoot()
-                    }) {
-                        Text("WMM")
-                            .font(.headline)
-                            .foregroundColor(.black)
-                    }
-                    
-                    NavigationLink(destination: SettingView()) {
-                        Image(systemName: "gearshape.fill")
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                            .foregroundColor(.black)
-                    }
-                })
             }
-    
+            .navigationTitle("나의 제출")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: HStack {
+                Button(action: {
+                    navigationManager.resetToRoot()
+                }) {
+                    Text("WMM")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                }
+                        
+                NavigationLink(destination: SettingView()) {
+                    Image(systemName: "gearshape.fill")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .foregroundColor(.black)
+                }
+            })
+        }
+        
+    }
     // 마감일까지 남은 일자에 따라 색상 결정
     func getDeadlineColor(for submission: Submission) -> Color {
         let timeInterval = submission.deadline.timeIntervalSince(Date())
@@ -180,11 +198,12 @@ struct MySubmissionView: View {
         case _ where daysLeft < 1:
             return Color.red.opacity(0.9) // 마감일이 하루 이내
         case 1..<3:
-            return Color.red.opacity(0.6) // 1-2일 남음
+            return Color.red.opacity(0.7) // 1-2일 남음
         default:
-            return Color.red.opacity(0.3) // 3일 이상
+            return Color.red.opacity(0.4) // 3일 이상
         }
     }
+        
 }
 
 struct SubmissionDetailView: View {

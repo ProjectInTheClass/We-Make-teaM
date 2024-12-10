@@ -3,119 +3,85 @@ import SwiftUI
 struct ProjectHomeView: View {
     var projectName: String
     @EnvironmentObject var navigationManager: NavigationManager
-
+    @State private var isDarkMode: Bool = false // 스위치 상태
+    @State private var selectedCharacter: String = "char3"
+    @State private var selectedPlane: String = "colored_plane"
+    @State private var navigateToSelectionView: Bool = false // 네비게이션 상태
+    
     var body: some View {
-        ZStack(){
+        ZStack {
             Color.yellow
                 .opacity(0.15)
                 .ignoresSafeArea()
-            VStack {
-                Spacer()
-                ZStack {
-                    Image("colored_plane")
-                        .resizable()
-                        .frame(width:420, height:270)
-                        .offset(x: 0, y: 0)
-                   // Image("cloud")
-                     //   .resizable()
-                      //  .frame(width:420, height:270)
-                        //.offset(x: 0, y: 70)
             
-                    Image("char3")
+            VStack {
+                // Toggle
+                Toggle("", isOn: $isDarkMode)
+                    .labelsHidden()
+                    .toggleStyle(SwitchToggleStyle(tint: .yellow))
+                    .frame(width: 60)
+                    .padding()
+                    .shadow(radius: 5)
+                    .padding()
+                    .onChange(of: isDarkMode) { newValue in
+                        if newValue {
+                            navigateToSelectionView = true
+                        }
+                    }
+                
+                // 네비게이션 링크
+                NavigationLink(destination: CharacterAndPlaneSelectionView(selectedCharacter: $selectedCharacter, selectedPlane: $selectedPlane), isActive: $navigateToSelectionView) {
+                    EmptyView()
+                }
+                
+                ZStack {
+                    Image(selectedPlane)
+                        .resizable()
+                        .frame(width: 420, height: 270)
+                    
+                    Image(selectedCharacter)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 280, height: 280)
-                    ZStack{
-                        Text(projectName)
-                            .font(.system(size: 35, weight: .black, design: .rounded))
-                            .padding(.top, 5)
-                            .offset(y: 170)
-                    }
+                    
+                    Text(projectName)
+                        .font(.system(size: 35, weight: .black, design: .rounded))
+                        .padding(.top, 5)
+                        .offset(y: 170)
                 }
+                
                 Spacer()
-                Spacer()
+                
+
+                
                 // 주요 기능 버튼 섹션
                 HStack {
                     Spacer()
-                    NavigationLink(destination: MySubmissionView(projectName: projectName, teamMembers: [
-                        TeamMember(name: "Alice", score: 90, profileImage: Image(systemName: "person.fill")),
-                        TeamMember(name: "Bob", score: 85, profileImage: Image(systemName: "person.fill")),
-                        TeamMember(name: "Charlie", score: 95, profileImage: Image(systemName: "person.fill")),
-                        TeamMember(name: "Dave", score: 80, profileImage: Image(systemName: "person.fill")),
-                        TeamMember(name: "Eve", score: 88, profileImage: Image(systemName: "person.fill"))
-                    ])) {  // Project 객체를 넘김
-                        VStack {
-                            //Image(systemName: "doc.text")
-                            Image("mySubmission3")
-                                .resizable()
-                                .frame(width: 75, height: 80)
-                                .foregroundColor(.black)
-                            Text("나의 제출")
-                                .frame(width: 90)
-                                //.background(Color.white)
-                                .cornerRadius(5)
-                                .foregroundColor(.black)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                //.overlay(
-                                //    RoundedRectangle(cornerRadius: 3)
-                                //        .stroke(Color.black, lineWidth: 2)
-                                //    )
-                        }
-                    }
-                    Spacer()
-                    Spacer()
-                    NavigationLink(destination: CalendarView()) {  // Project 객체를 넘김
-                        VStack {
-                            //Image(systemName: "calendar")
-                            Image("calendar3")
-                                .resizable()
-                                .frame(width: 84, height: 84)
-                            Text("캘린더")
-                                .frame(width: 80)
-                                //.background(Color.white)
-                                .cornerRadius(5)
-                                .foregroundColor(.black)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                //.border(Color.black, width:2)
-                                //.overlay(
-                                //    RoundedRectangle(cornerRadius: 3)
-                                //        .stroke(Color.black, lineWidth: 2)
-                                //    )
-                        }
+                    
+                    NavigationLink(destination: MySubmissionView(projectName: projectName, teamMembers: sampleTeamMembers)) {
+                        featureButton(imageName: "mySubmission3", title: "나의 제출")
                     }
                     
                     Spacer()
-                    Spacer()
-                    NavigationLink(destination: ParticipationRankingView(projectName: projectName)) {  // Project 객체를 넘김
-                        VStack {
-                            //Image(systemName: "person.3")
-                            Image("ranking")
-                                .resizable()
-                                .frame(width: 75, height: 85)
-
-                            Text("참여순위")
-                                .frame(width: 90)
-                                //.background(Color.white)
-                                .cornerRadius(5)
-                                .foregroundColor(.black)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                //.overlay(
-                                //    RoundedRectangle(cornerRadius: 3)
-                                //        .stroke(Color.black, lineWidth: 2)
-                                //    )
-                            
-                        }
+                    
+                    NavigationLink(destination: CalendarView()) {
+                        featureButton(imageName: "calendar3", title: "캘린더")
                     }
+                    
+                    Spacer()
+                    
+                    NavigationLink(destination: ParticipationRankingView(projectName: projectName)) {
+                        featureButton(imageName: "ranking", title: "참여순위")
+                    }
+                    
                     Spacer()
                 }
-                .frame(maxWidth: .infinity)
                 .frame(height: 180)
-                //.background(Color.yellow.opacity(0.2))
                 .padding(.horizontal, 0)
-                Spacer()
+                
                 Spacer()
             }
-            .navigationTitle(projectName)
+            .navigationTitle("사용자 정보 관리")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: HStack {
                 Button(action: {
@@ -135,11 +101,34 @@ struct ProjectHomeView: View {
             })
         }
     }
+    
+    // 주요 기능 버튼을 생성하는 함수
+    func featureButton(imageName: String, title: String) -> some View {
+        VStack {
+            Image(imageName)
+                .resizable()
+                .frame(width: 75, height: 80)
+            
+            Text(title)
+                .frame(width: 90)
+                .foregroundColor(.black)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+        }
+    }
+    
+    // 샘플 팀원 데이터
+    let sampleTeamMembers = [
+        TeamMember(name: "Alice", score: 90, profileImage: Image(systemName: "person.fill")),
+        TeamMember(name: "Bob", score: 85, profileImage: Image(systemName: "person.fill")),
+        TeamMember(name: "Charlie", score: 95, profileImage: Image(systemName: "person.fill")),
+        TeamMember(name: "Dave", score: 80, profileImage: Image(systemName: "person.fill")),
+        TeamMember(name: "Eve", score: 88, profileImage: Image(systemName: "person.fill"))
+    ]
 }
 
-#Preview {
-    ProjectHomeView(projectName: "소프트웨어 스튜디오 2")
-        .environmentObject(NavigationManager()) // NavigationManager를 environmentObject로 제공
+struct ProjectHomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        ProjectHomeView(projectName: "소프트웨어 스튜디오 2")
+            .environmentObject(NavigationManager())
+    }
 }
-
-

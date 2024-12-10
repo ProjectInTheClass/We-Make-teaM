@@ -4,9 +4,9 @@ struct SubmitView: View {
     var event: Event // Specific event details
     var selectedDate: Date
     @State private var members: [Member] = [
-        Member(name: "김현경", hasSubmitted: false),
-        Member(name: "신준용", hasSubmitted: true),
-        Member(name: "정광석", hasSubmitted: false)
+        Member(name: "김현경", hasSubmitted: false, submittedFiles: [] ,submittedTexts: []),
+        Member(name: "신준용", hasSubmitted: true, submittedFiles: [] ,submittedTexts: []),
+        Member(name: "정광석", hasSubmitted: false, submittedFiles: [] ,submittedTexts: [])
     ]
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -49,9 +49,9 @@ struct SubmitView: View {
 
             Spacer()
 
-            NavigationLink(destination: UploadMySubmissionView(onSubmit: {
-                if let myIndex = members.firstIndex(where: { $0.name == "김현경" }) {
-                    members[myIndex].hasSubmitted = true
+            NavigationLink(destination: UploadMySubmissionView(onSubmit: { updatedMember in
+                if let index = members.firstIndex(where: { $0.name == updatedMember.name }) {
+                    members[index] = updatedMember
                 }
             })) {
                 Text("과제 제출하러 가기")
@@ -75,6 +75,8 @@ struct Member: Identifiable {
     let id = UUID()
     let name: String
     var hasSubmitted: Bool
+    var submittedFiles: [String] = [] // 제출된 파일 목록
+    var submittedTexts: [String] = [] // 제출된 텍스트 목록
 }
 
 #Preview {
