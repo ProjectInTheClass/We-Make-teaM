@@ -11,6 +11,7 @@ struct TeamMember: Identifiable {
 
 struct Submission: Identifiable {
     let id = UUID()
+    let s_id : String
     let title: String
     let deadline: Date
     let priority: Int
@@ -70,12 +71,17 @@ struct MySubmissionView: View {
                     }
 
                     let deadline = deadlineTimestamp.dateValue()
-                    return Submission(title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize, url : url)
+                    
+                    // Firestore 문서 ID를 s_id로 설정
+                    let s_id = doc.documentID
+                    
+                    return Submission(s_id: s_id, title: title, deadline: deadline, priority: priority, isSubmitted: isSubmitted, fileName: fileName, fileSize: fileSize, url: url)
                 } ?? []
                 self.isLoading = false
             }
         print(submissions)
     }
+
 
     var body: some View {
         VStack(spacing: 20) {
@@ -161,6 +167,12 @@ struct MySubmissionView: View {
 struct SubmissionDetailView: View {
     let submission: Submission
     var teamMembers : [TeamMember]
+    
+    
+    @State private var nickname: String = ""
+    @State private var isSubmitted: Bool = false
+    @State private var submissionId: String = ""
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text(submission.title)
@@ -179,7 +191,7 @@ struct SubmissionDetailView: View {
             Spacer()
             
             // "제출물 확인" 버튼
-            NavigationLink(destination: SubmittedView(teamMembers: teamMembers)) {
+            NavigationLink(destination: MemberSubmissionDetailView(member:  Member(name: nickname, hasSubmitted: isSubmitted, submissionId: submissionId))) {
                 Text("제출물 확인")
                     .foregroundColor(.white)
                     .padding()
@@ -192,7 +204,41 @@ struct SubmissionDetailView: View {
         .padding()
         .navigationTitle("제출물 세부 정보")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+                    loadUserData()
+                    loadSubmissionData()
+                }
     }
+    func loadUserData() {
+            guard let userId = Auth.auth().currentUser?.uid else {
+                return
+            }
+            
+            let db = Firestore.firestore()
+            let userRef = db.collection("users").document(userId)
+            
+            userRef.getDocument { document, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let document = document, document.exists {
+                    self.nickname = document.data()?["nickname"] as? String ?? "Unknown"
+                } else {
+                    print("User document does not exist")
+                }
+            }
+        print(self.nickname)
+        }
+        
+        // 제출물의 isSubmitted와 submissionId를 저장하는 메서드
+        func loadSubmissionData() {
+            self.isSubmitted = submission.isSubmitted
+            self.submissionId = submission.s_id
+            print("submissionid:",self.submissionId)
+        }
+    
 }
 
 #Preview {
