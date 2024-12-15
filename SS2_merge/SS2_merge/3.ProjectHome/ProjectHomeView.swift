@@ -3,70 +3,80 @@ import SwiftUI
 struct ProjectHomeView: View {
     var projectName: String
     @EnvironmentObject var navigationManager: NavigationManager
-    @State private var isDarkMode: Bool = false // 스위치 상태
+    @State private var isShowingChangeCharacterView = false
+    
     @State private var selectedCharacter: String = "char3"
-    @State private var selectedPlane: String = "colored_plane"
-    
-    
+    @State private var selectedPlane: String = "pp3"
+
     var body: some View {
-        ZStack {
+        ZStack(){
             Color.yellow
-                .opacity(0.15)
+                .opacity(0.2)
                 .ignoresSafeArea()
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        isShowingChangeCharacterView = true
+                    }) {
+                        Image("off")
+                            .resizable()
+                            .frame(width: 80, height: 80)
+                    }
+                    .frame(maxWidth:.infinity)
+                    .padding()
+                }
                 
-                // 네비게이션 링크
-                NavigationLink(destination: CharacterAndPlaneSelectionView(selectedCharacter: $selectedCharacter, selectedPlane: $selectedPlane), isActive: $navigateToSelectionView) {
+                // NavigationLink로 ChangeCharacterView로 이동
+                NavigationLink(destination: ChangeCharacterView(
+                    selectedCharacter: $selectedCharacter,
+                    selectedPlane: $selectedPlane
+                ), isActive: $isShowingChangeCharacterView) {
                     EmptyView()
                 }
                 
                 ZStack {
                     Image(selectedPlane)
                         .resizable()
-                        .frame(width: 420, height: 270)
-                    
+                        .frame(width:420, height:270)
+                
                     Image(selectedCharacter)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 280, height: 280)
-                    
                     Text(projectName)
                         .font(.system(size: 35, weight: .black, design: .rounded))
                         .padding(.top, 5)
                         .offset(y: 170)
                 }
-                
                 Spacer()
-                
-
-                
+                Spacer()
                 // 주요 기능 버튼 섹션
                 HStack {
                     Spacer()
-                    
                     NavigationLink(destination: MySubmissionView(projectName: projectName, teamMembers: sampleTeamMembers)) {
-                        featureButton(imageName: "mySubmission3", title: "나의 제출")
+                        featureButton(imageName: "s", title: "나의 제출")
                     }
-                    
                     Spacer()
                     
                     NavigationLink(destination: CalendarView()) {
-                        featureButton(imageName: "calendar3", title: "캘린더")
+                        featureButton(imageName: "c2", title: "캘린더")
                     }
-                    
                     Spacer()
                     
                     NavigationLink(destination: ParticipationRankingView(projectName: projectName)) {
-                        featureButton(imageName: "ranking", title: "참여순위")
+                        featureButton(imageName: "r", title: "참여순위")
                     }
-                    
                     Spacer()
+                    
                 }
+                .frame(maxWidth: .infinity)
                 .frame(height: 180)
                 .padding(.horizontal, 0)
-                
+                Spacer()
                 Spacer()
             }
-            .navigationTitle("사용자 정보 관리")
+            .navigationTitle(projectName)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: HStack {
                 Button(action: {
@@ -86,18 +96,16 @@ struct ProjectHomeView: View {
             })
         }
     }
-    
-    // 주요 기능 버튼을 생성하는 함수
     func featureButton(imageName: String, title: String) -> some View {
         VStack {
             Image(imageName)
                 .resizable()
-                .frame(width: 75, height: 80)
+                .frame(width: 65, height: 70)
             
             Text(title)
                 .frame(width: 90)
                 .foregroundColor(.black)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
         }
     }
     
@@ -111,9 +119,7 @@ struct ProjectHomeView: View {
     ]
 }
 
-struct ProjectHomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProjectHomeView(projectName: "소프트웨어 스튜디오 2")
-            .environmentObject(NavigationManager())
-    }
+#Preview {
+    ProjectHomeView(projectName: "소프트웨어 스튜디오 2")
+        .environmentObject(NavigationManager()) // NavigationManager를 environmentObject로 제공
 }
